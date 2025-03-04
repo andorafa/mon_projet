@@ -1,10 +1,24 @@
+import os
+from dotenv import load_dotenv
 from flask import Flask
 
 from flask import Flask, jsonify
+from flask_jwt_extended import JWTManager
 from flask_restful import Api, Resource
 
 app = Flask(__name__)
 api = Api(app)
+
+app = Flask(__name__)
+api = Api(app)
+
+
+load_dotenv()  # Charge les variables d'environnement depuis le fichier .env
+
+# Configuration du secret pour signer les JWT
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')  # Utilise la variable d'environnement
+
+jwt = JWTManager(app)
 
 # Mock des données de l'ERP et du CRM
 products = [
