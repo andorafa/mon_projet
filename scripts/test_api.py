@@ -1,7 +1,9 @@
+import os
 import requests
 
 # Adresse du backend Flask
-BASE_URL = "http://127.0.0.1:5000"
+#BASE_URL = "http://127.0.0.1:5000"
+BASE_URL = os.environ.get("BASE_URL", "http://127.0.0.1:5000")
 
 # Variables globales
 VALID_API_KEY = None  # Pas défini au départ

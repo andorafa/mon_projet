@@ -2,7 +2,7 @@ name: API Tests CI
 
 on:
   push:
-    branches: 
+    branches:
       - main
       - creation-apirest
   pull_request:
@@ -30,9 +30,11 @@ jobs:
 
       - name: Launch Flask server
         run: |
-          gunicorn --bind 0.0.0.0:5000 run:app &
-          sleep 5
+          gunicorn --bind 0.0.0.0:5000 run:app --log-level debug &
+          sleep 10
 
       - name: Run API tests
+        env:
+          BASE_URL: http://127.0.0.1:5000
         run: |
           python scripts/test_api.py
