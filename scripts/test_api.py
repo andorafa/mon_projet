@@ -1,4 +1,5 @@
 import os
+import time
 import requests
 
 # Adresse du backend Flask
@@ -17,11 +18,15 @@ def test_create_user_success():
         f"{BASE_URL}/api/users",
         json={"email": "testuser@example.com"}
     )
-    print("Réponse brute : ", response.text) 
+    print(f"Réponse status: {response.status_code}")
+    print(f"Réponse body: {response.text}")
     assert response.status_code == 201
     data = response.json()
     VALID_API_KEY = data["api_key"]
     print(f"✅ test_create_user_success PASSED (Nouvelle clé API : {VALID_API_KEY})")
+    time.sleep(1)
+
+
 
 
 def test_create_user_missing_email():
