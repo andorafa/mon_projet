@@ -1,8 +1,8 @@
-name: API Tests CI
+name: API Tests CI (on Render)
 
 on:
   push:
-    branches:
+    branches: 
       - main
       - creation-apirest
   pull_request:
@@ -21,20 +21,15 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.13.2'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install flask flask-restful flask-sqlalchemy flask-migrate python-dotenv requests gunicorn
+          pip install requests
 
-      - name: Launch Flask server
-        run: |
-          gunicorn --bind 0.0.0.0:5000 run:app --log-level debug &
-          sleep 10
-
-      - name: Run API tests
+      - name: Run API tests against Render
         env:
-          BASE_URL: http://127.0.0.1:5000
+          BASE_URL: https://payetonkawa-api.onrender.com
         run: |
           python scripts/test_api.py
