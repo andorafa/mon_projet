@@ -27,11 +27,15 @@ def create_app():
     from app.resources.user import UserAPI
     from app.resources.authenticate import AuthenticateAPI
     from app.resources.logout import LogoutAPI
+    from app.resources.product_detail import ProductDetailAPI
+
+
 
     api.add_resource(WebshopAPI, '/api/webshop/products')
     api.add_resource(RevendeursAPI, '/api/revendeurs/products')
     api.add_resource(UserAPI, '/api/users')
     api.add_resource(AuthenticateAPI, '/api/revendeurs/authenticate')
     api.add_resource(LogoutAPI, '/api/logout')
+    api.add_resource(ProductDetailAPI, '/api/products/<int:product_id>')
 
     return app
