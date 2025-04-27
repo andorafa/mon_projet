@@ -3,7 +3,8 @@ import requests
 
 # Adresse du backend Flask
 #BASE_URL = "http://127.0.0.1:5000"
-BASE_URL = os.environ.get("BASE_URL", "http://127.0.0.1:5000")
+BASE_URL = "https://payetonkawa-api.onrender.com"
+
 
 # Variables globales
 VALID_API_KEY = None  # Pas défini au départ
@@ -16,10 +17,12 @@ def test_create_user_success():
         f"{BASE_URL}/api/users",
         json={"email": "testuser@example.com"}
     )
+    print("Réponse brute : ", response.text) 
     assert response.status_code == 201
     data = response.json()
     VALID_API_KEY = data["api_key"]
     print(f"✅ test_create_user_success PASSED (Nouvelle clé API : {VALID_API_KEY})")
+
 
 def test_create_user_missing_email():
     response = requests.post(

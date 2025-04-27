@@ -2,7 +2,7 @@
 import os
 
 class Config:
-    # Base de données : Render te fournit DATABASE_URL automatiquement
+    # Base de données : Render fournit DATABASE_URL automatiquement
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///mon_projet.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 

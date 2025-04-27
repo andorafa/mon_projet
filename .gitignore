@@ -1,4 +1,4 @@
-app/config.py
+#app/config.py
 # Flask / Python
 __pycache__/
 *.py[cod]
