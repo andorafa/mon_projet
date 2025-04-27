@@ -28,6 +28,8 @@ def create_app():
     from app.resources.authenticate import AuthenticateAPI
     from app.resources.logout import LogoutAPI
     from app.resources.product_detail import ProductDetailAPI
+    from app.resources.init_db import InitDBAPI
+
 
 
 
@@ -37,5 +39,7 @@ def create_app():
     api.add_resource(AuthenticateAPI, '/api/revendeurs/authenticate')
     api.add_resource(LogoutAPI, '/api/logout')
     api.add_resource(ProductDetailAPI, '/api/products/<int:product_id>')
+    api.add_resource(InitDBAPI, '/api/admin/init-db')
+
 
     return app
