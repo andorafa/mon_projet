@@ -27,7 +27,7 @@ def send_email(to: str, subject: str, body: str, attachment: bytes = None):
             server.ehlo()
             server.starttls()  # Active le chiffrement TLS
             server.ehlo()
-            # Connectez-vous avec vos identifiants Gmail ou avec un mot de passe d'application
+            # Se connecter avec les identifiants Gmail ou avec un mot de passe d'application
             server.login(APP_EMAIL, APP_PASSWORD)
             server.send_message(msg)
         print("Email envoyé avec succès.")

@@ -2,6 +2,7 @@
 from flask_restful import Resource
 from flask import Config, request, abort
 from app.models import Product
+from app.config import Config
 
 
 
@@ -9,7 +10,7 @@ class WebshopAPI(Resource):
     def get(self):
         # Vérifier la clé API dans les headers
         api_key = request.headers.get("x-api-key")
-        if api_key != Config.WEBSHOP_API_KEY:
+        if api_key != Config.API_WEBSHOP_KEY:
             abort(401, description="Accès non autorisé")
         
         # Récupérer les produits depuis la base de données

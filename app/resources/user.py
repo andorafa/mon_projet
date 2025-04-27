@@ -15,29 +15,31 @@ class UserAPI(Resource):
         args = parser.parse_args()
         email = args['email']
 
-        # Générer une clé unique (ici avec uuid4)
-        user_key = str(uuid.uuid4())
+        # Recherche ou création de l'utilisateur
+        user = User.query.filter_by(email=email).first()
+        if user:
+            # Régénère une nouvelle clé pour reconnexion
+            user_key = str(uuid.uuid4())
+            user.api_key = user_key
+        else:
+            # Création d'un nouvel utilisateur
+            user_key = str(uuid.uuid4())
+            user = User(email=email, api_key=user_key)
+            db.session.add(user)
 
-        # Création d'un nouvel utilisateur
-        new_user = User(email=email, api_key=user_key)
-        db.session.add(new_user)
         db.session.commit()
 
-        # Générer le QR Code pour la clé d'authentification
+        # Générer et encoder le QR Code
         qr = qrcode.QRCode(version=1, box_size=10, border=5)
         qr.add_data(user_key)
         qr.make(fit=True)
         img = qr.make_image(fill='black', back_color='white')
-        
-        # Sauvegarder l'image du QR Code en mémoire
         buf = io.BytesIO()
         img.save(buf, format='PNG')
         byte_im = buf.getvalue()
-
-        # Encodage en base64 pour faciliter le transfert via JSON
         encoded_img = base64.b64encode(byte_im).decode('utf-8')
 
-
+        # Envoi de l'email
         send_email(
             to=email,
             subject="Votre QR Code",
@@ -46,7 +48,7 @@ class UserAPI(Resource):
         )
 
         return {
-            "message": "Utilisateur créé avec succès",
+            "message": "Utilisateur (re)connecté avec succès",
             "api_key": user_key,
-            "qr_code": encoded_img  # Ce champ contient l'image du QR Code encodée en base64
+            "qr_code": encoded_img
         }, 201

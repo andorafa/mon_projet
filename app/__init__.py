@@ -2,6 +2,9 @@
 from flask import Flask, app
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from dotenv import load_dotenv
+
+load_dotenv()
 
 db = SQLAlchemy()
 
@@ -19,7 +22,6 @@ def create_app():
     from flask_restful import Api
     api = Api(app)
 
-    app.config.from_object('app.config.Config')
 
     
     # Importer et enregistrer les ressources (endpoints)
@@ -30,12 +32,15 @@ def create_app():
     api.add_resource(RevendeursAPI, '/api/revendeurs/products')
     
     
-    # (Vous pourrez ajouter d'autres endpoints, par exemple pour la gestion des utilisateurs et le QR Code)
-
     # Ajout du nouvel endpoint pour la gestion des utilisateurs
     from app.resources.user import UserAPI
     from app.resources.authenticate import AuthenticateAPI
     api.add_resource(UserAPI, '/api/users')
     api.add_resource(AuthenticateAPI, '/api/revendeurs/authenticate')
+
+    #deconnexion
+    from app.resources.logout import LogoutAPI
+    api.add_resource(LogoutAPI, '/api/logout')  # endpoint de déconnexion
+
 
     return app
