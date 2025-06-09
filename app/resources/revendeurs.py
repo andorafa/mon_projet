@@ -21,7 +21,7 @@ class RevendeursAPI(Resource):
         # Récupérer les produits (filtrage ou autres règles spécifiques peuvent être appliqués)
         products = Product.query.all()
         produits = [
-            {"id": p.id, "name": p.name, "description": p.description, "price": p.price}
+            {"id": p.id, "name": p.name, "description": p.description, "price": p.price, "model_url": p.model_url}
             for p in products
         ]
         return {"products": produits}, 200
