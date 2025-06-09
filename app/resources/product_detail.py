@@ -12,5 +12,6 @@ class ProductDetailAPI(Resource):
             "id": product.id,
             "name": product.name,
             "description": product.description,
-            "price": product.price
+            "price": product.price,
+            "model_url": product.model_url
         }, 200

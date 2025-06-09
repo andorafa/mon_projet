@@ -16,7 +16,7 @@ def test_create_user_success():
     global VALID_API_KEY
     response = requests.post(
         f"{BASE_URL}/api/users",
-        json={"email": "testuser@example.com"}
+        json={"email": "andofdsfsd4fdfsffa@example.com"}
     )
     print(f"Réponse status: {response.status_code}")
     print(f"Réponse body: {response.text}")
@@ -60,6 +60,8 @@ def test_revendeurs_access_products_success():
         f"{BASE_URL}/api/revendeurs/products",
         headers={"x-api-key": VALID_API_KEY}
     )
+    print(f"Réponse status: {response.status_code}")
+    print(f"Réponse body: {response.text}")
     assert response.status_code == 200
     print("✅ test_revendeurs_access_products_success PASSED")
 
