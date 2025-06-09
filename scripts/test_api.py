@@ -27,8 +27,6 @@ def test_create_user_success():
     time.sleep(1)
 
 
-
-
 def test_create_user_missing_email():
     response = requests.post(
         f"{BASE_URL}/api/users",
