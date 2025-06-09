@@ -40,7 +40,7 @@ def reset_and_populate():
                 name="Machine à Café",
                 description="Machine professionnelle pour cafés gourmets",
                 price=250.0,
-                model_url="https://modelviewer.dev/shared-assets/models/CoffeeMachine.glb"
+                model_url="https://drive.google.com/uc?export=download&id=1Oq_vVepdhZqbhX2Gm7nVcQqttLrlwZWQ"
             ),
             Product(
                 name="Espresso",
