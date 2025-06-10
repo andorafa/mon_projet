@@ -2,6 +2,8 @@ import pytest
 from app import create_app, db
 from app.models import User
 
+# test: déclenchement de la CI GitHub
+
 
 def test_create_user(client):
     response = client.post("/api/users", json={"email": "unit@test.com"})
