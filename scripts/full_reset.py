@@ -16,7 +16,7 @@ def reset_and_populate():
         # Vérifie si la table 'products' existe bien
         inspector = db.inspect(db.engine)
         if 'product' not in inspector.get_table_names():
-            print("❌ Table 'product' non trouvée. Assure-toi que le modèle est correct.")
+            print("❌ Table 'product' non trouvée. Assurer que le modèle est correct.")
             return
 
         # Nettoyage sécurisé selon le type de base

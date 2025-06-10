@@ -1,10 +1,11 @@
 # app/resources/product_detail.py
 from flask_restful import Resource
 from app.models import Product
+from app import db
 
 class ProductDetailAPI(Resource):
     def get(self, product_id):
-        product = Product.query.get(product_id)
+        product = db.session.get(Product, product_id)
         if not product:
             return {"message": "Produit introuvable."}, 404
 

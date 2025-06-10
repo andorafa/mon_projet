@@ -4,7 +4,7 @@ import requests # type: ignore
 BASE_URL = "http://127.0.0.1:5000"
 
 # 🔑 Remplacer par la clé API de l'utilisateur que je veux déconnecter
-api_key_to_logout = "ta_vraie_cle_API_revendeur"
+api_key_to_logout = "La_vraie_cle_API_revendeur"
 
 def logout_user():
     url = f"{BASE_URL}/api/logout"

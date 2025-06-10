@@ -1,6 +1,6 @@
 import requests # type: ignore
 
-# 🛠️ L'URL de ton API Flask
+# 🛠️ L'URL d'API Flask
 BASE_URL = "http://127.0.0.1:5000"
 
 # Remplacer par l'email que je veux utiliser pour créer l'utilisateur

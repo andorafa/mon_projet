@@ -4,8 +4,6 @@ from flask import Config, request, abort
 from app.models import Product
 from app.config import Config
 
-
-
 class WebshopAPI(Resource):
     def get(self):
         # Vérifier la clé API dans les headers

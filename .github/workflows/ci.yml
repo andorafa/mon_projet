@@ -1,4 +1,4 @@
-name: API Tests CI (on Render)
+name: CI - Tests, Coverage & Sécurité
 
 on:
   push:
@@ -11,25 +11,50 @@ on:
       - creation-apirest
 
 jobs:
-  test-api:
+  test-and-coverage:
+    name: Tests + Couverture + Codecov
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout du code
         uses: actions/checkout@v3
 
-      - name: Set up Python
+      - name: Configuration Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.13.2'
 
-      - name: Install dependencies
+      - name: Installation des dépendances
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+          pip install pytest pytest-cov requests
 
-      - name: Run API tests against Render
-        env:
-          BASE_URL: https://payetonkawa-api.onrender.com
+      - name: Lancer les tests unitaires + couverture
         run: |
-          python scripts/test_api.py
+          pytest --cov=app --cov-report=xml tests/
+
+      - name: Upload vers Codecov (sans token)
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true
+
+  bandit-security-scan:
+    name: Analyse de sécurité Bandit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v3
+
+      - name: Configuration Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Installer Bandit
+        run: pip install bandit
+
+      - name: Exécuter le scan de sécurité
+        run: bandit -r app -ll
