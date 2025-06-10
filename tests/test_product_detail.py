@@ -1,7 +1,5 @@
-import pytest
-from app import create_app, db
+from app import db
 from app.models import Product
-
 
 def test_product_detail(client):
     with client.application.app_context():
