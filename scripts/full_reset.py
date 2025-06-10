@@ -43,10 +43,10 @@ def reset_and_populate():
                 model_url="https://drive.google.com/uc?export=download&id=1Oq_vVepdhZqbhX2Gm7nVcQqttLrlwZWQ"
             ),
             Product(
-                name="Espresso",
-                description="Café noir intense",
-                price=2.0,
-                model_url="https://modelviewer.dev/shared-assets/models/Espresso.glb"
+                name="Cappuccino",
+                description="A cup_of_cappuccino",
+                price=50.0,
+                model_url="https://drive.google.com/uc?export=download&id=1PsD-QhE0z1R-v4mcY8-W0CFw746oLUXl"
             ),
             Product(
                 name="Thé Vert",
