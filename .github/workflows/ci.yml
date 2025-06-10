@@ -4,11 +4,11 @@ on:
   push:
     branches: 
       - main
-      - creation-api-rest
+      - creation-apirest
   pull_request:
     branches:
       - main
-      - creation-api-rest
+      - creation-apirest
 
 jobs:
   test-and-coverage:
