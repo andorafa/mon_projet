@@ -12,10 +12,8 @@ on:
 
 jobs:
   test-and-coverage:
-    name: Tests + Couverture locale
+    name: Tests + Couverture + Codecov
     runs-on: ubuntu-latest
-    env:
-      API_WEBSHOP_KEY: "webshop123"  # requis par test_webshop.py
 
     steps:
       - name: Checkout du code
@@ -33,10 +31,15 @@ jobs:
 
       - name: Lancer les tests avec couverture
         run: |
-          pytest --cov=app --cov-report=term-missing tests/
+          pytest --cov=app --cov-report=xml tests/
 
-      - name: Fin des tests
-        run: echo "✅ Tests et couverture exécutés avec succès (voir ci-dessus)"
+      - name: Envoi des données à Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true
 
   bandit-security-scan:
     name: Analyse de sécurité Bandit
