@@ -1,8 +1,8 @@
-name: CI - Tests, Couverture, Sécurité et Déploiement
+name: CI - Tests, Couverture, Sécurité
 
 on:
   push:
-    branches: 
+    branches:
       - main
       - creation-apirest
   pull_request:
@@ -12,10 +12,10 @@ on:
 
 jobs:
   test-and-coverage:
-    name: Tests + Couverture + Codecov
+    name: Tests + Couverture locale
     runs-on: ubuntu-latest
     env:
-      API_WEBSHOP_KEY: "webshop123"  # Clé utilisée par le test_webshop.py
+      API_WEBSHOP_KEY: "webshop123"  # requis par test_webshop.py
 
     steps:
       - name: Checkout du code
@@ -33,14 +33,10 @@ jobs:
 
       - name: Lancer les tests avec couverture
         run: |
-          pytest --cov=app --cov-report=xml tests/
+          pytest --cov=app --cov-report=term-missing tests/
 
-      - name: Envoi des données à Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./coverage.xml
-          fail_ci_if_error: true
-          verbose: true
+      - name: Fin des tests
+        run: echo "✅ Tests et couverture exécutés avec succès (voir ci-dessus)"
 
   bandit-security-scan:
     name: Analyse de sécurité Bandit
@@ -60,5 +56,3 @@ jobs:
 
       - name: Exécuter Bandit sur le dossier app
         run: bandit -r app -ll
-
-
