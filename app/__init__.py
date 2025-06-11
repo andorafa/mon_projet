@@ -41,8 +41,8 @@ def create_app():
     api.add_resource(InitDBAPI, '/api/admin/init-db')
 
     # ✅ Ajout de la route /
-    @app.route("/")
-    def health_check():
-        return {"status": "API is running"}, 200
+    # @app.route("/")
+    # def health_check():
+    #     return {"status": "API is running"}, 200
 
     return app
