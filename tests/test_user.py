@@ -20,3 +20,4 @@ def test_existing_user_gets_new_api_key(client):
     assert response.status_code == 201
     new_key = response.get_json()["api_key"]
     assert new_key != "old_key"
+# test: CI trigger 1
