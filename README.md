@@ -1,4 +1,4 @@
-# Structure des branches et justification du merge dans `main`
+# 📂 Structure des branches et justification du merge dans `main`
 
 ## 🎯 Cette branche `main` contient uniquement le backend
 
