@@ -94,4 +94,6 @@ jobs:
       - name: ▶️ Exécuter full_reset.py
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python scripts/full_reset.py
+        run: |
+          export PYTHONPATH=$(pwd)
+          python scripts/full_reset.py
