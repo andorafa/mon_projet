@@ -67,3 +67,4 @@ if __name__ == "__main__":
     # Assure l'accès au module 'app' depuis scripts/
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
     reset_and_populate()
+
