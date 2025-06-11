@@ -1,0 +1,5 @@
+{
+    "json.format.keepLines": true,
+    "python.analysis.typeEvaluation.deprecateTypingAliases": true,
+    "python.pythonPath": "./venv/bin/python.exe"
+}

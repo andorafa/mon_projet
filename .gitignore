@@ -1,0 +1,39 @@
+#app/config.py
+# Flask / Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+instance/
+#.migrations/
+*.sqlite3
+
+# Venv
+venv/
+env/
+ENV/
+.venv/
+.Python
+
+# Configuration / Secrets
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs, cache, test output
+htmlcov/
+.coverage
+.cache/
+nosetests.xml
+coverage.xml
+*.log
+
+# Fichiers système
+.DS_Store
+Thumbs.db
