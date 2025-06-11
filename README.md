@@ -5,6 +5,11 @@
 
 ![CI (creation-apirest)](https://github.com/andorafa/mon_projet/actions/workflows/ci.yml/badge.svg?branch=creation-apirest)
 
+
+![Tests d'intégration](https://github.com/andorafa/mon_projet/actions/workflows/integration-tests.yml/badge.svg?branch=creation-apirest)
+
+
+
 Une API Flask sécurisée avec tests, couverture et analyse Bandit.
 
 
