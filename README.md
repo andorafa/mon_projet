@@ -5,7 +5,7 @@
 Ce projet (mon_projet) suit une structure multi-branche :
 
 - 🧪 Le **code du backend** est dans la branche [`creation-apirest`](https://github.com/andorafa/mon_projet/tree/creation-apirest)
-- 📱 Le code de l'**application mobile Flutter** est dans [`mobile-app`](https://github.com/andorafa/mon_projet/tree/mobile-app)
+- 📱 Le code de l'**application mobile Flutter** est dans la branche [`mobile-app`](https://github.com/andorafa/mon_projet/tree/mobile-app)
 
 ---
 
