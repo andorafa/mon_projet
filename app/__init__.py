@@ -1,5 +1,5 @@
 # app/__init__.py
-from flask import Flask
+from flask import Flask, app
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from dotenv import load_dotenv
@@ -12,6 +12,11 @@ migrate = Migrate()
 def create_app():
     app = Flask(__name__)
     app.config.from_object('app.config.Config')
+
+    # ✅ Forcer SQLAlchemy à tester la connexion avant usage
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        "pool_pre_ping": True
+    }
     
     # Initialisation de la base de données et des migrations
     db.init_app(app)
@@ -43,3 +48,7 @@ def create_app():
 
 
     return app
+
+@app.route("/")
+def health_check():
+    return {"status": "API is running"}, 200
