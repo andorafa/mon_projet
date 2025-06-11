@@ -3,7 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'qr_scanner_page.dart';
-// Instance SecureStorage pour garder la clé API en local
+
 final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
 class AuthenticationPage extends StatefulWidget {
@@ -23,7 +23,6 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_initialized) {
-      // Récupère l'argument de déconnexion réussie si présent
       final arg = ModalRoute.of(context)?.settings.arguments as String?;
       if (arg != null && arg.isNotEmpty) {
         message = arg;
@@ -38,7 +37,15 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
     super.dispose();
   }
 
-  /// Inscription : envoi du mail pour générer le QR Code
+  Future<void> _wakeUpServer() async {
+    try {
+      final response = await http.get(Uri.parse('https://payetonkawa-api.onrender.com/'));
+      debugPrint("Wake-up status: ${response.statusCode}");
+    } catch (e) {
+      debugPrint("Wake-up failed: $e");
+    }
+  }
+
   Future<void> _registerAndSendQRCode() async {
     final email = emailController.text.trim();
     if (email.isEmpty) {
@@ -68,8 +75,10 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
     }
   }
 
-  /// Connexion : scan du QR Code et authentification
   Future<void> _scanQRCodeAndAuthenticate() async {
+    // ✅ Réveil du backend
+    await _wakeUpServer();
+
     final scannedKey = await Navigator.push<String?>(
       context,
       MaterialPageRoute(builder: (_) => const QRScannerPage()),
@@ -79,7 +88,6 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
     }
   }
 
-  /// Authentification via l'API
   Future<void> _authenticateUser(String apiKey) async {
     setState(() {
       isLoading = true;
@@ -95,7 +103,6 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
         },
       );
       if (response.statusCode == 200) {
-        // Sauvegarde sécurisée de la clé
         await _secureStorage.write(key: 'api_key', value: apiKey);
         setState(() => message = 'Authentification réussie !');
         Navigator.pushReplacementNamed(
@@ -104,7 +111,6 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
           arguments: apiKey,
         );
       } else {
-        // Lecture du message d'erreur du serveur
         String errMsg;
         try {
           final body = json.decode(response.body) as Map<String, dynamic>;
