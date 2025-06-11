@@ -22,3 +22,9 @@ Le code du backend a été temporairement fusionné dans la branche `main` **uni
 
 ✅ CI/CD, tests, sécurité, et couverture sont toujours configurés sur `creation-apirest`.  
 Ce merge dans `main` est purement **fonctionnel pour les outils de qualité de code.**
+
+---
+
+## 📊 Analyse SonarQube (qualité de code)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=andorafa_mon_projet&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=andorafa_mon_projet)
+
