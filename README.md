@@ -4,7 +4,7 @@
 
 Ce projet (mon_projet) suit une structure multi-branche :
 
-- 🧪 Le **développement actif du backend** se fait dans la branche [`creation-apirest`](https://github.com/andorafa/mon_projet/tree/creation-apirest)
+- 🧪 Le **code du backend** est dans la branche [`creation-apirest`](https://github.com/andorafa/mon_projet/tree/creation-apirest)
 - 📱 Le code de l'**application mobile Flutter** est dans [`mobile-app`](https://github.com/andorafa/mon_projet/tree/mobile-app)
 
 ---
@@ -16,7 +16,7 @@ Le code du backend a été temporairement fusionné dans la branche `main` **uni
 ➡️ En effet, **SonarCloud gratuit n’analyse que la branche `main`**, d’où cette intégration technique.
 
 > 🚨 **Important** : pour le moment aucun développement actif ne se fait dans `main`.  
-> Toutes les fonctionnalités backend continuent d’évoluer dans `creation-apirest`.
+> Pour le moment, toutes les fonctionnalités backend et mobile vont continuer si besoin d’évoluer dans `creation-apirest` et `mobile-app` .
 
 ---
 
