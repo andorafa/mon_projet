@@ -18,3 +18,4 @@ class Config:
 
 
 
+DEBUG_CI_TEST = True
