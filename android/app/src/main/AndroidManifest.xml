@@ -1,4 +1,17 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 1. Permission pour accéder à la caméra -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+
+    <!-- 2. Indique que l'app utilise ARCore et qu'elle requiert une caméra AR -->
+    <uses-feature
+        android:name="android.hardware.camera.ar"
+        android:required="true"/>
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
+
     <application
         android:label="test_app"
         android:name="${applicationName}"

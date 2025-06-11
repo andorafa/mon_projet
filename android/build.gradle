@@ -1,3 +1,20 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        // Baisser la version AGP à 7.4.2
+        classpath 'com.android.tools.build:gradle:7.4.2'
+        // Conserver Kotlin à jour ou ajuster si nécessaire
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.10"
+    }
+}
+
+
+
+
+
 allprojects {
     repositories {
         google()
@@ -6,13 +23,30 @@ allprojects {
 }
 
 rootProject.buildDir = "../build"
+
+
+// Configuration des sous‑projets (séparation des build directories)
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
-}
-subprojects {
     project.evaluationDependsOn(":app")
+
+    // Injection du namespace pour Android Gradle Plugin 7.0+
+    if (project.extensions.findByName('android') != null) {
+        project.extensions.configure(com.android.build.gradle.BaseExtension) { androidExt ->
+            if (androidExt.hasProperty('namespace')) {
+                if (androidExt.namespace == null || androidExt.namespace.toString().isEmpty()) {
+                    androidExt.namespace = project.group ?: project.name
+                }
+            }
+        }
+    }
 }
 
+// tasks.register reste inchangé
+// Tâche clean pour supprimer le build directory global
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
+
+
+

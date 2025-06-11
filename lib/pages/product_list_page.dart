@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'ProductDetailPage.dart';
+import 'authentication_page.dart';
+
+final _secureStorage = FlutterSecureStorage();
 
 class ProductListPage extends StatefulWidget {
   const ProductListPage({Key? key}) : super(key: key);
@@ -17,19 +23,29 @@ class _ProductListPageState extends State<ProductListPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final String? apiKey = ModalRoute.of(context)!.settings.arguments as String?;
-    if (apiKey != null) {
-      _fetchProducts(apiKey);
+    final argKey = ModalRoute.of(context)?.settings.arguments as String?;
+    if (argKey != null && argKey.isNotEmpty) {
+      _fetchProducts(argKey);
     } else {
-      setState(() {
-        isLoading = false;
-        errorMessage = "Clé d'authentification manquante.";
+      _secureStorage.read(key: 'api_key').then((storedKey) {
+        if (storedKey != null) {
+          _fetchProducts(storedKey);
+        } else {
+          setState(() {
+            isLoading = false;
+            errorMessage = "Clé d'authentification manquante.";
+          });
+        }
       });
     }
   }
 
   Future<void> _fetchProducts(String apiKey) async {
-    final url = Uri.parse('https://38cf-2001-861-3a02-a880-5dfd-14ce-366c-f1f1.ngrok-free.app/api/revendeurs/products');
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
+    final url = Uri.parse('https://payetonkawa-api.onrender.com/api/revendeurs/products');
     try {
       final response = await http.get(
         url,
@@ -39,22 +55,51 @@ class _ProductListPageState extends State<ProductListPage> {
         },
       );
       if (response.statusCode == 200) {
+        final body = json.decode(response.body);
         setState(() {
-          products = json.decode(response.body)['products'];
+          products = body['products'] as List<dynamic>;
           isLoading = false;
         });
       } else {
         setState(() {
-          errorMessage = 'Erreur lors du chargement des produits : ${response.statusCode}';
+          errorMessage = 'Erreur ${response.statusCode} lors du chargement des produits.';
           isLoading = false;
         });
       }
     } catch (e) {
       setState(() {
-        errorMessage = 'Erreur lors de la connexion à l’API : $e';
+        errorMessage = 'Erreur de connexion à l’API : $e';
         isLoading = false;
       });
     }
+  }
+
+  Future<void> _logout() async {
+    final apiKey = await _secureStorage.read(key: 'api_key');
+    if (apiKey != null) {
+      try {
+        await http.post(
+          Uri.parse('https://payetonkawa-api.onrender.com/api/logout'),
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey,
+          },
+        );
+      } catch (_) {
+        // Ignorer les erreurs de déconnexion silencieusement
+      }
+    }
+
+    await _secureStorage.delete(key: 'api_key');
+
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => const AuthenticationPage(),
+        settings: const RouteSettings(arguments: "Déconnexion réussie, à bientôt"),
+      ),
+          (route) => false,
+    );
+
   }
 
   @override
@@ -62,19 +107,36 @@ class _ProductListPageState extends State<ProductListPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Liste des produits'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
+          ),
+        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : errorMessage.isNotEmpty
           ? Center(child: Text(errorMessage))
           : ListView.builder(
+        padding: const EdgeInsets.all(12),
         itemCount: products.length,
         itemBuilder: (context, index) {
           final product = products[index];
-          return ListTile(
-            title: Text(product['name'] ?? 'Nom indisponible'),
-            subtitle: Text(product['description'] ?? 'Pas de description'),
-            trailing: Text("${product['price']} €"),
+          return Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: ListTile(
+              title: Text(product['name'] ?? 'Nom indisponible'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProductDetailPage(productId: product['id']),
+                  ),
+                );
+              },
+            ),
           );
         },
       ),

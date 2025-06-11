@@ -32,6 +32,9 @@ dependencies:
     sdk: flutter
   http: ^0.13.4
   qr_code_scanner_plus: ^2.0.6
+  ar_flutter_plugin: ^0.7.3
+  geolocator_android: 4.6.1
+  flutter_secure_storage: ^8.0.0
 
 
   # The following adds the Cupertino Icons font to your application.
