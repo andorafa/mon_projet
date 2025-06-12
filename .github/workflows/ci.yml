@@ -1,4 +1,4 @@
-name: CI/CD - Tests unitaires, Couverture, Sécurité, Déploiement
+name: CI/CD - Tests unitaires, Couverture, SonarCloud, Sécurité, Déploiement
 
 on:
   push:
@@ -11,15 +11,15 @@ on:
       - creation-apirest
 
 jobs:
-  test-and-coverage:
-    name: ✅ Tests unitaires + Couverture
+  tests:
+    name: ✅ Tests unitaires + Couverture + SonarCloud
     runs-on: ubuntu-latest
 
     steps:
       - name: 📥 Checkout du code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Corrige "shallow clone"
+          fetch-depth: 0  # Important pour SonarCloud (SCM info)
 
       - name: 🐍 Setup Python
         uses: actions/setup-python@v4
@@ -43,7 +43,19 @@ jobs:
           fail_ci_if_error: true
           verbose: true
 
-      - name: 🔍 Analyse SonarCloud
+  sonarcloud:
+    name: 🧠 Analyse de qualité SonarCloud
+    runs-on: ubuntu-latest
+    needs: tests
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: 📥 Checkout complet du code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: 🔍 Exécuter SonarCloud Scanner
         uses: SonarSource/sonarcloud-github-action@v2
         with:
           args: >
@@ -75,10 +87,7 @@ jobs:
   deploy:
     name: 🚀 Déploiement Render
     runs-on: ubuntu-latest
-    needs:
-      - test-and-coverage
-      - bandit
-
+    needs: [tests, bandit]
     if: github.ref == 'refs/heads/creation-apirest' && github.event_name == 'push'
 
     steps:
