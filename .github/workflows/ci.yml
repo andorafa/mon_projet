@@ -77,16 +77,31 @@ jobs:
 
       - name: 🛑 Vérifier le statut de la Quality Gate via l’API
         run: |
-          echo "⏳ Attente du traitement SonarCloud..."
-          sleep 20
+          echo "⏳ Attente de l'analyse SonarCloud..."
+          PROJECT_KEY=${{ secrets.SONAR_PROJECT_KEY }}
+          SONAR_TOKEN=${{ secrets.SONAR_TOKEN }}
 
-          echo "📡 Vérification de la Quality Gate via l'API SonarCloud"
-          analysis_id=$(curl -s -u "$SONAR_TOKEN:" \
-            "https://sonarcloud.io/api/project_analyses/search?project=${{ secrets.SONAR_PROJECT_KEY }}" \
-            | jq -r '.analyses[0].events[0].analysisId')
+          for i in {1..10}; do
+            echo "🔄 Tentative $i : récupération de l'analyse..."
+            analysis_id=$(curl -s -u "$SONAR_TOKEN:" \
+              "https://sonarcloud.io/api/project_analyses/search?project=$PROJECT_KEY" \
+              | jq -r '.analyses[0].events[0].analysisId')
 
-          echo "🆔 Dernier analysisId : $analysis_id"
+            if [ "$analysis_id" != "null" ] && [ -n "$analysis_id" ]; then
+              echo "✅ analysisId trouvé : $analysis_id"
+              break
+            fi
 
+            echo "⏳ Analyse non trouvée, nouvelle tentative dans 10 secondes..."
+            sleep 10
+          done
+
+          if [ "$analysis_id" == "null" ] || [ -z "$analysis_id" ]; then
+            echo "❌ Impossible de récupérer l'analyse SonarCloud après 10 tentatives"
+            exit 1
+          fi
+
+          echo "📡 Vérification du statut de la Quality Gate..."
           status=$(curl -s -u "$SONAR_TOKEN:" \
             "https://sonarcloud.io/api/qualitygates/project_status?analysisId=$analysis_id" \
             | jq -r '.projectStatus.status')
