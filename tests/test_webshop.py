@@ -1,8 +1,9 @@
 from app import db
-from app.models import Product
+
 
 def test_webshop_valid_key(client, setup_user):
     with client.application.app_context():
+        from app.models import Product
         Product.query.delete()
         db.session.add(Product(
             name="Produit Test",
@@ -17,6 +18,7 @@ def test_webshop_valid_key(client, setup_user):
     data = response.get_json()
     assert isinstance(data, list)
     assert any(p["name"] == "Produit Test" for p in data)
+
 
 def test_webshop_missing_key(client):
     response = client.get("/api/webshop/products")

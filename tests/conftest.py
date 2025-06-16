@@ -1,5 +1,6 @@
 import pytest
 from app import create_app, db
+from app.models import User
 
 @pytest.fixture(scope="session")
 def app():
@@ -18,3 +19,10 @@ def app():
 @pytest.fixture(scope="function")
 def client(app):
     return app.test_client()
+
+@pytest.fixture
+def setup_user(app):
+    with app.app_context():
+        db.session.query(User).delete()
+        db.session.add(User(email="test@webshop.com", api_key="webshop123"))
+        db.session.commit()
