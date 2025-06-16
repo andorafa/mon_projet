@@ -5,13 +5,20 @@ from app.models import User, Product
 # 🔒 Tests /api/revendeurs/logout
 def test_logout_valid_key(client):
     with client.application.app_context():
-        user = User(email="logout@test.com", api_key="logout123")
-        db.session.add(user)
+        # Vérifie si l'utilisateur existe déjà
+        existing_user = User.query.filter_by(email="logout@test.com").first()
+        if not existing_user:
+            user = User(email="logout@test.com", api_key="logout123")
+            db.session.add(user)
+        else:
+            existing_user.api_key = "logout123"
         db.session.commit()
 
-    res = client.post("/api/revendeurs/logout", headers={"x-api-key": "logout123"})
-    assert res.status_code == 200
-    assert "Déconnexion réussie" in res.get_json()["message"]
+    response = client.post("/api/revendeurs/logout", headers={"x-api-key": "logout123"})
+    assert response.status_code == 200
+    data = response.get_json()
+    assert "message" in data
+    assert data["message"] == "Déconnexion réussie"
 
 def test_logout_missing_key(client):
     res = client.post("/api/revendeurs/logout")
