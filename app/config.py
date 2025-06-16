@@ -13,9 +13,4 @@ class Config:
 
     API_WEBSHOP_KEY = os.environ.get('API_WEBSHOP_KEY', 'webshop_default_key')
 
-
-
-
-
-
 DEBUG_CI_TEST = True
