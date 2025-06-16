@@ -1,7 +1,9 @@
-# app/resources/init_db.py
-from flask_restful import Resource
+from flask_restx import Namespace, Resource
 from app import db
 
+ns = Namespace("admin", description="Admin DB")
+
+@ns.route("/init-db")
 class InitDBAPI(Resource):
     def post(self):
         db.create_all()

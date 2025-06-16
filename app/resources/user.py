@@ -1,48 +1,40 @@
-from flask_restful import Resource, reqparse
+from flask_restx import Namespace, Resource, reqparse, fields
 from app.models import User
 from app import db
-import uuid
-import io
-import base64
-import qrcode
+import uuid, io, base64, qrcode
 from app.utils.email import send_email
 
+ns = Namespace("users", description="Création d'utilisateur")
+
+user_model = ns.model("User", {
+    "email": fields.String(required=True)
+})
+
+@ns.route("")
 class UserAPI(Resource):
+    @ns.expect(user_model)
     def post(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('email', type=str, required=True, help="L'email est obligatoire.")
+        parser.add_argument("email", type=str, required=True)
         args = parser.parse_args()
-        email = args['email']
-        # Recherche ou création de l'utilisateur
+        email = args["email"]
+
         user = User.query.filter_by(email=email).first()
+        user_key = str(uuid.uuid4())
         if user:
-            # Régénère une nouvelle clé pour reconnexion
-            user_key = str(uuid.uuid4())
             user.api_key = user_key
         else:
-            # Création d'un nouvel utilisateur
-            user_key = str(uuid.uuid4())
             user = User(email=email, api_key=user_key)
             db.session.add(user)
         db.session.commit()
-        # Générer et encoder le QR Code
-        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+
+        qr = qrcode.QRCode()
         qr.add_data(user_key)
-        qr.make(fit=True)
         img = qr.make_image(fill='black', back_color='white')
         buf = io.BytesIO()
         img.save(buf, format='PNG')
         byte_im = buf.getvalue()
         encoded_img = base64.b64encode(byte_im).decode('utf-8')
-        # Envoi de l'email
-        send_email(
-            to=email,
-            subject="Votre QR Code",
-            body="Voici votre QR Code pour accéder à l'application mobile.",
-            attachment=byte_im
-        )
-        return {
-            "message": "Utilisateur (re)connecté avec succès",
-            "api_key": user_key,
-            "qr_code": encoded_img
-        }, 201
+        send_email(to=email, subject="QR Code", body="Voici votre clé", attachment=byte_im)
+
+        return {"message": "Utilisateur connecté", "api_key": user_key, "qr_code": encoded_img}, 201
