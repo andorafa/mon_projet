@@ -57,7 +57,7 @@ def create_app():
     api.add_namespace(ns_health, path='/health')
 
     @app.route('/home')
-    def redirect_to_swagger():
+    def home_direct():
         return redirect('/swagger')
     
 
