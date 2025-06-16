@@ -19,14 +19,26 @@ def test_revendeurs_products(client):
     assert res.status_code == 200
 
 def test_authenticate_success(client):
-    create_user(client, "auth@test.com", "authkey")
+    with client.application.app_context():
+        db.session.query(User).filter_by(email="auth@test.com").delete()
+        db.session.commit()
+        db.session.add(User(email="auth@test.com", api_key="authkey"))
+        db.session.commit()
+
     res = client.post("/api/revendeurs/authenticate", headers={"x-api-key": "authkey"})
     assert res.status_code == 200
 
+
 def test_logout_success(client):
-    create_user(client, "logout@test.com", "logoutkey")
-    res = client.post("/api/logout", headers={"x-api-key": "logoutkey"})
+    with client.application.app_context():
+        db.session.query(User).filter_by(email="logout@test.com").delete()
+        db.session.commit()
+        db.session.add(User(email="logout@test.com", api_key="logoutkey"))
+        db.session.commit()
+
+    res = client.post("/api/revendeurs/logout", headers={"x-api-key": "logoutkey"})
     assert res.status_code == 200
+
 
 def test_user_creation(client):
     res = client.post("/api/users", json={"email": "newuser@test.com"})
@@ -47,10 +59,15 @@ def test_product_detail_not_found(client):
     assert res.status_code == 404
 
 def test_webshop_access(client):
-    create_user(client, "webshop@client.com", "webshop123")
-    create_product(client)
+    with client.application.app_context():
+        db.session.query(User).filter_by(api_key="webshop123").delete()
+        db.session.commit()
+        db.session.add(User(email="webshop@client.com", api_key="webshop123"))
+        db.session.commit()
+
     res = client.get("/api/webshop/products", headers={"x-api-key": "webshop123"})
     assert res.status_code == 200
+
 
 def test_init_db(client):
     res = client.post("/api/admin/init-db")
