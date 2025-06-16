@@ -12,14 +12,14 @@ on:
 
 jobs:
   tests:
-    name: ✅ Tests unitaires + Couverture + SonarCloud
+    name: ✅ Tests unitaires + Couverture
     runs-on: ubuntu-latest
 
     steps:
       - name: 📥 Checkout du code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Important pour SonarCloud (SCM info)
+          fetch-depth: 0
 
       - name: 🐍 Setup Python
         uses: actions/setup-python@v4
@@ -43,17 +43,28 @@ jobs:
           fail_ci_if_error: true
           verbose: true
 
+      - name: 📦 Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+
   sonarcloud:
     name: 🧠 Analyse de qualité SonarCloud
     runs-on: ubuntu-latest
     needs: tests
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/creation-apirest'
 
     steps:
       - name: 📥 Checkout complet du code
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+      - name: 📥 Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
 
       - name: 🔍 Exécuter SonarCloud Scanner
         uses: SonarSource/sonarcloud-github-action@v2
