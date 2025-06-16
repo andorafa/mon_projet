@@ -2,13 +2,9 @@ name: CI/CD - Tests unitaires, Couverture, SonarCloud, Sécurité, Déploiement
 
 on:
   push:
-    branches:
-      - main
-      - creation-apirest
+    branches: [main, creation-apirest]
   pull_request:
-    branches:
-      - main
-      - creation-apirest
+    branches: [main, creation-apirest]
 
 jobs:
   tests:
@@ -35,15 +31,7 @@ jobs:
         run: |
           pytest --cov=app --cov-config=.coveragerc --cov-report=xml tests/
 
-      - name: 📤 Envoyer la couverture à Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.xml
-          fail_ci_if_error: true
-          verbose: true
-
-      - name: 📦 Upload coverage report
+      - name: 📦 Upload coverage report (pour SonarCloud)
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
