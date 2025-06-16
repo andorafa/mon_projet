@@ -46,19 +46,24 @@ def create_app():
     api.add_namespace(product_ns, path="/api/products")
     api.add_namespace(admin_ns, path="/api/admin")
 
-    ns_health = api.namespace('health', description='Health check API')
+    # ns_health = api.namespace('health', description='Health check API')
 
-    @ns_health.route('')
-    class HealthCheck(Resource):
-        def get(self):
-            """Health check endpoint."""
-            return {"status": "API OK"}, 200
+    # @ns_health.route('')
+    # class HealthCheck(Resource):
+    #     def get(self):
+    #         """Health check endpoint."""
+    #         return {"status": "API OK"}, 200
 
-    api.add_namespace(ns_health, path='/health')
+    # api.add_namespace(ns_health, path='/health')
 
-    @app.route('/home')
-    def home_direct():
-        return redirect('/swagger')
+    # @app.route('/')
+    # def hello_world():
+    #     return "hello world"
+
+
+    # @app.route('/home')
+    # def home_direct():
+    #     return redirect('/swagger')
     
 
     return app
