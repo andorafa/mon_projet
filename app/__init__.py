@@ -13,6 +13,11 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object('app.config.Config')
 
+    # Route racine définie directement en Flask pour éviter 404
+    @app.route('/')
+    def root_redirect():
+        return redirect('/swagger')
+
     db.init_app(app)
     migrate.init_app(app, db)
 
@@ -46,24 +51,19 @@ def create_app():
     api.add_namespace(product_ns, path="/api/products")
     api.add_namespace(admin_ns, path="/api/admin")
 
-    # ns_health = api.namespace('health', description='Health check API')
+    ns_health = api.namespace('health', description='Health check API')
 
-    # @ns_health.route('')
-    # class HealthCheck(Resource):
-    #     def get(self):
-    #         """Health check endpoint."""
-    #         return {"status": "API OK"}, 200
+    @ns_health.route('')
+    class HealthCheck(Resource):
+        def get(self):
+            """Health check endpoint."""
+            return {"status": "API OK"}, 200
 
-    # api.add_namespace(ns_health, path='/health')
+    api.add_namespace(ns_health, path='/health')
 
-    # @app.route('/')
-    # def hello_world():
-    #     return "hello world"
-
-
+    # Facultatif : route /home redirigeant aussi vers Swagger
     # @app.route('/home')
-    # def home_direct():
+    # def home_redirect():
     #     return redirect('/swagger')
-    
 
     return app
