@@ -68,4 +68,68 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@v2
         with:
           args: >
-            -Dsonar.projectKey=${{ secrets.SONAR_PR_
+            -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
+            -Dsonar.sources=app
+            -Dsonar.python.coverage.reportPaths=coverage.xml
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: 🛑 Vérifier le statut de la Quality Gate
+        uses: SonarSource/sonarcloud-quality-gate-action@v1.1.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  bandit:
+    name: 🔒 Analyse de sécurité Bandit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout du code
+        uses: actions/checkout@v3
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: 📦 Installer Bandit
+        run: pip install bandit
+
+      - name: 🔎 Scanner le dossier app
+        run: bandit -r app -ll
+
+  deploy:
+    name: 🚀 Déploiement Render
+    runs-on: ubuntu-latest
+    needs: [tests, bandit, sonarcloud]
+    if: github.ref == 'refs/heads/creation-apirest' && github.event_name == 'push'
+
+    steps:
+      - name: 📡 Appeler le hook Render
+        run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+
+  populate-db:
+    name: 🗃️ Peuplement de la base de données
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: github.ref == 'refs/heads/creation-apirest'
+
+    steps:
+      - name: 📥 Checkout du code
+        uses: actions/checkout@v3
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13.2'
+
+      - name: 📦 Installer les dépendances
+        run: pip install -r requirements.txt
+
+      - name: ▶️ Exécuter full_reset.py
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          export PYTHONPATH=$(pwd)
+          python scripts/full_reset.py
