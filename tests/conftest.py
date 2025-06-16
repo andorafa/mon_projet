@@ -22,7 +22,15 @@ def client(app):
 
 @pytest.fixture
 def setup_user(app):
-    with app.app_context():
-        db.session.query(User).delete()
-        db.session.add(User(email="test@webshop.com", api_key="webshop123"))
-        db.session.commit()
+    def _create_user(email="test@webshop.com", api_key="webshop123"):
+        with app.app_context():
+            # Supprime si déjà existant (évite l'erreur UNIQUE constraint)
+            db.session.query(User).filter_by(email=email).delete()
+            db.session.commit()
+
+            user = User(email=email, api_key=api_key)
+            db.session.add(user)
+            db.session.commit()
+            return user
+    return _create_user
+

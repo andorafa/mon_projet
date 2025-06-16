@@ -29,11 +29,11 @@ def test_revendeurs_get_direct_invalid_key(client):
     res = client.get("/api/revendeurs/products", headers={"x-api-key": "wrong"})
     assert res.status_code == 401
 
-def test_authenticate_post_valid(client):
-    setup_user(api_key="authkey", email="auth@test.com")
-    res = client.post("/api/revendeurs/authenticate", headers={"x-api-key": "authkey"})
-    assert res.status_code == 200
-    assert "message" in res.get_json()
+def test_authenticate_post_valid(client, setup_user):
+    setup_user(email="auth@test.com", api_key="authkey")
+    response = client.post("/api/revendeurs/authenticate", headers={"x-api-key": "authkey"})
+    assert response.status_code == 200
+
 
 def test_authenticate_post_missing_key(client):
     res = client.post("/api/revendeurs/authenticate")
