@@ -57,7 +57,7 @@ class _ProductListPageState extends State<ProductListPage> {
       if (response.statusCode == 200) {
         final body = json.decode(response.body);
         setState(() {
-          products = body['products'] as List<dynamic>;
+          products = body as List<dynamic>;
           isLoading = false;
         });
       } else {
