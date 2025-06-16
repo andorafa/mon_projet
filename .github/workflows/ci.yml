@@ -75,8 +75,28 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - name: 🛑 Vérifier le statut de la Quality Gate
-        uses: SonarSource/sonarcloud-quality-gate-action@v1.1.0
+      - name: 🛑 Vérifier le statut de la Quality Gate via l’API
+        run: |
+          echo "⏳ Attente du traitement SonarCloud..."
+          sleep 20
+
+          echo "📡 Vérification de la Quality Gate via l'API SonarCloud"
+          analysis_id=$(curl -s -u "$SONAR_TOKEN:" \
+            "https://sonarcloud.io/api/project_analyses/search?project=${{ secrets.SONAR_PROJECT_KEY }}" \
+            | jq -r '.analyses[0].events[0].analysisId')
+
+          echo "🆔 Dernier analysisId : $analysis_id"
+
+          status=$(curl -s -u "$SONAR_TOKEN:" \
+            "https://sonarcloud.io/api/qualitygates/project_status?analysisId=$analysis_id" \
+            | jq -r '.projectStatus.status')
+
+          echo "🎯 Quality Gate status: $status"
+
+          if [ "$status" != "OK" ]; then
+            echo "❌ Échec de la Quality Gate. Pipeline arrêté."
+            exit 1
+          fi
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
