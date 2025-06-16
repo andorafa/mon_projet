@@ -27,15 +27,26 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: 🧪 Lancer les tests avec couverture
+      - name: 🧪 Lancer les tests avec coverage
         run: |
-          pytest --cov=app --cov-config=.coveragerc --cov-report=xml tests/
+          export PYTHONPATH=$(pwd)
+          coverage run -m pytest tests/
+          coverage xml
 
       - name: 📦 Upload coverage report (pour SonarCloud)
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: coverage.xml
+
+      - name: 📤 Envoyer la couverture à Codecov (facultatif)
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          fail_ci_if_error: true
+          verbose: true
+
 
   sonarcloud:
     name: 🧠 Analyse de qualité SonarCloud
@@ -60,6 +71,7 @@ jobs:
           args: >
             -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
+            -Dsonar.sources=app
             -Dsonar.python.coverage.reportPaths=coverage.xml
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -117,3 +129,4 @@ jobs:
         run: |
           export PYTHONPATH=$(pwd)
           python scripts/full_reset.py
+#fff
