@@ -31,4 +31,4 @@ jobs:
 
       - name: 🚀 Lancer les tests d’intégration uniquement
         run: |
-          pytest tests/test_integration_api.py
+          pytest tests/test_integration_*.py
