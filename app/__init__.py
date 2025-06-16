@@ -1,6 +1,7 @@
-from flask import Flask  # ✅ Corrigé
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_restx import Api
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,37 +13,38 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object('app.config.Config')
 
-    # ✅ Connexion vérifiée avant chaque requête
-    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-        "pool_pre_ping": True
-    }
-
     db.init_app(app)
     migrate.init_app(app, db)
 
-    from flask_restful import Api
-    api = Api(app)
+    authorizations = {
+        "API Key": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "x-api-key"
+        }
+    }
 
-    # Importer les ressources
-    from app.resources.webshop import WebshopAPI
-    from app.resources.revendeurs import RevendeursAPI
-    from app.resources.user import UserAPI
-    from app.resources.authenticate import AuthenticateAPI
-    from app.resources.logout import LogoutAPI
-    from app.resources.product_detail import ProductDetailAPI
-    from app.resources.init_db import InitDBAPI
+    api = Api(
+        app,
+        title="PayeTonKawa API",
+        version="1.0",
+        description="Swagger pour les APIs Webshop et Revendeurs",
+        doc="/swagger",
+        security="API Key",
+        authorizations=authorizations
+    )
 
-    api.add_resource(WebshopAPI, '/api/webshop/products')
-    api.add_resource(RevendeursAPI, '/api/revendeurs/products')
-    api.add_resource(UserAPI, '/api/users')
-    api.add_resource(AuthenticateAPI, '/api/revendeurs/authenticate')
-    api.add_resource(LogoutAPI, '/api/logout')
-    api.add_resource(ProductDetailAPI, '/api/products/<int:product_id>')
-    api.add_resource(InitDBAPI, '/api/admin/init-db')
+    # 👇 Import des namespaces
+    from app.resources.webshop import ns as webshop_ns
+    from app.resources.revendeurs import ns as revendeurs_ns
+    from app.resources.user import ns as user_ns
+    from app.resources.product_detail import ns as product_ns
+    from app.resources.init_db import ns as admin_ns
 
-    # ✅ Ajout de la route /
-    # @app.route("/")
-    # def health_check():
-    #     return {"status": "API is running"}, 200
+    api.add_namespace(webshop_ns, path="/api/webshop")
+    api.add_namespace(revendeurs_ns, path="/api/revendeurs")
+    api.add_namespace(user_ns, path="/api/users")
+    api.add_namespace(product_ns, path="/api/products")
+    api.add_namespace(admin_ns, path="/api/admin")
 
     return app
