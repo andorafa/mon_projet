@@ -8,9 +8,10 @@ def test_logout_valid_key(client):
         db.session.add(User(email="logout@test.com", api_key="logout_key"))
         db.session.commit()
 
-    response = client.post("/api/logout", headers={"x-api-key": "logout_key"})
+    response = client.post("/api/revendeurs/logout", headers={"x-api-key": "logout_key"})
     assert response.status_code == 200
+    assert "message" in response.get_json()
 
 def test_logout_missing_key(client):
-    response = client.post("/api/logout")
+    response = client.post("/api/revendeurs/logout")
     assert response.status_code == 400
