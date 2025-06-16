@@ -20,4 +20,13 @@ def test_existing_user_gets_new_api_key(client):
     assert response.status_code == 201
     new_key = response.get_json()["api_key"]
     assert new_key != "old_key"
+
+def test_create_user_and_check_qr_code(client):
+    email = "coveragetest@example.com"
+    response = client.post("/api/users", json={"email": email})
+    assert response.status_code == 201
+    json_data = response.get_json()
+    assert "api_key" in json_data
+    assert "qr_code" in json_data
+
 # test: CI trigger 1

@@ -33,7 +33,7 @@ jobs:
 
       - name: 🧪 Lancer les tests avec couverture
         run: |
-          pytest --cov=app --cov-report=xml tests/
+          pytest --cov=app --cov-config=.coveragerc --cov-report=xml tests/
 
       - name: 📤 Envoyer la couverture à Codecov
         uses: codecov/codecov-action@v3
