@@ -11,7 +11,7 @@ from tests.conftest import setup_user
 #     db.session.commit()
 #     return user
 
-def test_revendeurs_get_direct_valid(client):
+def test_revendeurs_get_direct_valid(client, setup_user):
     setup_user(api_key="valid_key", email="revendeur@test.com")
 
     db.session.add(Product(name="Test", description="desc", price=1.0, model_url=""))
