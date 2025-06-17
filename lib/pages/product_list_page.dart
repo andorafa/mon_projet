@@ -79,7 +79,7 @@ class _ProductListPageState extends State<ProductListPage> {
     if (apiKey != null) {
       try {
         await http.post(
-          Uri.parse('https://payetonkawa-api.onrender.com/api/logout'),
+          Uri.parse('https://payetonkawa-api.onrender.com/api/revendeurs/logout'),
           headers: {
             'Content-Type': 'application/json',
             'x-api-key': apiKey,
