@@ -75,7 +75,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - name: 🛑 Vérifier la Quality Gate via API SonarCloud
+      - name: 🛑 Vérifier la Quality Gate via API SonarCloud (robuste)
         run: |
           echo "⏳ Attente de l’analyse SonarCloud..."
           PROJECT_KEY=${{ secrets.SONAR_PROJECT_KEY }}
@@ -83,9 +83,10 @@ jobs:
 
           for i in {1..15}; do
             echo "🔄 Tentative $i : récupération de l'analyse..."
-            analysis_id=$(curl -s -u "$SONAR_TOKEN:" \
-              "https://sonarcloud.io/api/project_analyses/search?project=$PROJECT_KEY" \
-              | jq -r '.analyses[0].events[0].analysisId')
+            JSON=$(curl -s -u "$SONAR_TOKEN:" \
+              "https://sonarcloud.io/api/project_analyses/search?project=$PROJECT_KEY")
+
+            analysis_id=$(echo "$JSON" | jq -r '.analyses[0].events[0].analysisId // .analyses[0].analysisId')
 
             if [ "$analysis_id" != "null" ] && [ -n "$analysis_id" ]; then
               echo "✅ analysisId trouvé : $analysis_id"
