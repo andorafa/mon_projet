@@ -7,7 +7,7 @@ BASE_URL = "http://127.0.0.1:5000"
 api_key_to_logout = "La_vraie_cle_API_revendeur"
 
 def logout_user():
-    url = f"{BASE_URL}/api/logout"
+    url = f"{BASE_URL}/api/revendeurs/logout"
     headers = {
         "Content-Type": "application/json",
         "x-api-key": api_key_to_logout

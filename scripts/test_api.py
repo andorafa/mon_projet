@@ -88,7 +88,7 @@ def test_webshop_access_products_no_key():
 def test_logout_success():
     global VALID_API_KEY
     response = requests.post(
-        f"{BASE_URL}/api/logout",
+        f"{BASE_URL}/api/revendeurs/logout",
         headers={"x-api-key": VALID_API_KEY}
     )
     assert response.status_code == 200
