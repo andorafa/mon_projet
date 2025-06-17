@@ -48,10 +48,10 @@ jobs:
           verbose: true
 
   sonarcloud:
-    name: 🧠 Analyse de qualité SonarCloud (main uniquement)
+    name: 🧠 Analyse SonarCloud + Quality Gate
     runs-on: ubuntu-latest
     needs: tests
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
 
     steps:
       - name: 📥 Checkout complet du code
@@ -75,42 +75,40 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - name: 🛑 Vérifier la Quality Gate via API SonarCloud (robuste)
+      - name: 🛑 Quality Gate via ceTaskId
         run: |
-          echo "⏳ Attente de l’analyse SonarCloud..."
-          PROJECT_KEY=${{ secrets.SONAR_PROJECT_KEY }}
-          SONAR_TOKEN=${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN="${{ secrets.SONAR_TOKEN }}"
+          ce_task_id=$(grep 'ceTaskId=' .scannerwork/report-task.txt | cut -d'=' -f2)
 
-          for i in {1..15}; do
-            echo "🔄 Tentative $i : récupération de l'analyse..."
-            JSON=$(curl -s -u "$SONAR_TOKEN:" \
-              "https://sonarcloud.io/api/project_analyses/search?project=$PROJECT_KEY")
+          echo "📄 ceTaskId : $ce_task_id"
 
-            analysis_id=$(echo "$JSON" | jq -r '.analyses[0].events[0].analysisId // .analyses[0].analysisId')
+          for i in {1..20}; do
+            echo "🔄 Vérification du statut d'analyse (tentative $i)..."
+            response=$(curl -s -u "$SONAR_TOKEN:" "https://sonarcloud.io/api/ce/task?id=$ce_task_id")
+            status=$(echo "$response" | jq -r '.task.status')
 
-            if [ "$analysis_id" != "null" ] && [ -n "$analysis_id" ]; then
-              echo "✅ analysisId trouvé : $analysis_id"
+            if [ "$status" = "SUCCESS" ]; then
+              analysis_id=$(echo "$response" | jq -r '.task.analysisId')
+              echo "✅ Analyse terminée : $analysis_id"
               break
             fi
 
-            echo "⏳ Analyse non encore disponible, attente 20s..."
-            sleep 20
+            echo "⏳ En attente... ($status)"
+            sleep 10
           done
 
-          if [ "$analysis_id" == "null" ] || [ -z "$analysis_id" ]; then
-            echo "❌ Analyse introuvable après 15 tentatives"
+          if [ -z "$analysis_id" ] || [ "$analysis_id" = "null" ]; then
+            echo "❌ Échec : analyse introuvable après 20 tentatives"
             exit 1
           fi
 
-          echo "📡 Vérification du statut de la Quality Gate..."
-          status=$(curl -s -u "$SONAR_TOKEN:" \
-            "https://sonarcloud.io/api/qualitygates/project_status?analysisId=$analysis_id" \
-            | jq -r '.projectStatus.status')
+          echo "📡 Quality Gate check..."
+          result=$(curl -s -u "$SONAR_TOKEN:" "https://sonarcloud.io/api/qualitygates/project_status?analysisId=$analysis_id")
+          gate_status=$(echo "$result" | jq -r '.projectStatus.status')
 
-          echo "🎯 Quality Gate status: $status"
-
-          if [ "$status" != "OK" ]; then
-            echo "❌ Quality Gate échouée. CI annulée."
+          echo "🎯 Quality Gate: $gate_status"
+          if [ "$gate_status" != "OK" ]; then
+            echo "❌ Quality Gate échouée. CI stoppée."
             exit 1
           fi
         env:
