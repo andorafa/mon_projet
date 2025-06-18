@@ -1,0 +1,63 @@
+name: Flutter Android CI/CD
+
+on:
+  push:
+    branches: [mobile-app-secours]
+  pull_request:
+    branches: [mobile-app-secours]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    name: Build & Deploy APK
+
+    env:
+      KEYSTORE_PATH: android/app/key.jks
+      FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+    steps:
+      # 📥 Récupérer le code source
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      # ⚙️ Configurer Flutter
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.x'
+
+      # 📦 Installer les dépendances
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      # 🧪 (Optionnel) Lancer les tests unitaires
+      - name: Run tests
+        run: flutter test
+
+      # 🔐 Restaurer le keystore à partir du secret encodé
+      - name: Decode keystore from secret
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > $KEYSTORE_PATH
+
+      # 🏗️ Construire l’APK signé
+      - name: Build signed APK
+        run: flutter build apk --release
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      # 📎 Upload de l’APK comme artifact GitHub
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      # 🚀 Déploiement Firebase App Distribution
+      - name: Deploy to Firebase App Distribution
+        run: |
+          curl -sL https://firebase.tools | bash
+          firebase appdistribution:distribute build/app/outputs/flutter-apk/app-release.apk \
+            --app "${{ secrets.FIREBASE_APP_ID }}" \
+            --token "${{ secrets.FIREBASE_TOKEN }}" \
+            --groups "testers"
