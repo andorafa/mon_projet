@@ -47,13 +47,17 @@ class _ProductListPageState extends State<ProductListPage> {
     });
     final url = Uri.parse('https://payetonkawa-api.onrender.com/api/revendeurs/products');
     try {
-      final response = await http.get(
+
+      final client = http.Client();
+      final response = await client.get(
         url,
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': apiKey,
         },
       );
+
+
       if (response.statusCode == 200) {
         final body = json.decode(response.body);
         setState(() {
