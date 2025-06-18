@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "306449916234",
+    "project_id": "payetonkawa-c5eed",
+    "storage_bucket": "payetonkawa-c5eed.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:306449916234:android:7e3f65de3ee3a5c695a1b3",
+        "android_client_info": {
+          "package_name": "com.example.test_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBdn8okdVukRDKA2xiUwIq10KMkUSbq6Do"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -35,6 +35,8 @@ dependencies:
   ar_flutter_plugin: ^0.7.3
   geolocator_android: 4.6.1
   flutter_secure_storage: ^8.0.0
+  firebase_auth: ^5.6.0
+  cloud_firestore: ^5.6.9
 
 
   # The following adds the Cupertino Icons font to your application.
