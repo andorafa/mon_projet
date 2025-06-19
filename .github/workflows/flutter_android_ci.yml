@@ -38,6 +38,13 @@ jobs:
       - name: Decode keystore from secret
         run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > $KEYSTORE_PATH
 
+
+      # 🛠️ Fix PATH for sdkmanager
+      - name: Set ANDROID_HOME and update PATH
+        run: |
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
+
       # ✅ Accept licenses + install correct NDK
       - name: Accept Android SDK licenses
         run: yes | sdkmanager --licenses
