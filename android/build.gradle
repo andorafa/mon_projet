@@ -9,7 +9,7 @@ buildscript {
         // Baisser la version AGP à 7.4.2
         classpath 'com.android.tools.build:gradle:7.4.2'
         // Conserver Kotlin à jour ou ajuster si nécessaire
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.22"
         classpath 'com.google.gms:google-services:4.4.2'
 
     }
