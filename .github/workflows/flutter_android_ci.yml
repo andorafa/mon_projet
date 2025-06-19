@@ -45,9 +45,18 @@ jobs:
             adb devices
             adb wait-for-device
             adb shell getprop sys.boot_completed
-            adb shell screencap -p /sdcard/screen.png
-            adb pull /sdcard/screen.png screen.png
-            flutter test integration_test
+            echo "✅ Émulateur lancé avec succès"
+            
+            # 🐢 Petit délai pour garantir la stabilité du système
+            sleep 5
+            
+            # 🧪 Tests d'intégration
+            flutter test integration_test || exit 1
+            
+            # 📸 Tentative de capture d'écran (facultative)
+            echo "Tentative de capture d'écran..."
+            adb shell screencap -p /data/local/tmp/screen.png || echo "⚠️ Capture échouée"
+            adb pull /data/local/tmp/screen.png screen.png || echo "⚠️ Pull échoué ou fichier inexistant"
 
       # 💾 (Optionnel) Récupérer la capture d’écran pour debug
       - name: 🖼️ Upload emulator screenshot
