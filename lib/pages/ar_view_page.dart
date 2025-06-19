@@ -1,15 +1,15 @@
 
-import 'package:ar_flutter_plugin/datatypes/config_planedetection.dart';
-import 'package:ar_flutter_plugin/datatypes/node_types.dart';
-import 'package:ar_flutter_plugin/managers/ar_anchor_manager.dart';
-import 'package:ar_flutter_plugin/managers/ar_location_manager.dart';
-import 'package:ar_flutter_plugin/managers/ar_object_manager.dart';
-import 'package:ar_flutter_plugin/managers/ar_session_manager.dart';
-import 'package:ar_flutter_plugin/models/ar_anchor.dart';
-import 'package:ar_flutter_plugin/models/ar_hittest_result.dart';
-import 'package:ar_flutter_plugin/models/ar_node.dart';
+import 'package:ar_flutter_plugin_2/datatypes/config_planedetection.dart';
+import 'package:ar_flutter_plugin_2/datatypes/node_types.dart';
+import 'package:ar_flutter_plugin_2/managers/ar_anchor_manager.dart';
+import 'package:ar_flutter_plugin_2/managers/ar_location_manager.dart';
+import 'package:ar_flutter_plugin_2/managers/ar_object_manager.dart';
+import 'package:ar_flutter_plugin_2/managers/ar_session_manager.dart';
+import 'package:ar_flutter_plugin_2/models/ar_anchor.dart';
+import 'package:ar_flutter_plugin_2/models/ar_hittest_result.dart';
+import 'package:ar_flutter_plugin_2/models/ar_node.dart';
 import 'package:flutter/material.dart';
-import 'package:ar_flutter_plugin/ar_flutter_plugin.dart';
+import 'package:ar_flutter_plugin_2/ar_flutter_plugin.dart';
 import 'package:vector_math/vector_math_64.dart';
 import 'dart:math' as math;
 
@@ -62,7 +62,7 @@ class _ARViewPageState extends State<ARViewPage> {
     if (hits.isEmpty) return;
 
     if (widget.modelUrl == null || widget.modelUrl!.isEmpty) {
-      _arSessionManager.onError("Aucune URL de modèle 3D fournie.");
+      _arSessionManager.onError!("Aucune URL de modèle 3D fournie.");
       return;
     }
 
@@ -76,7 +76,7 @@ class _ARViewPageState extends State<ARViewPage> {
     final anchor = ARPlaneAnchor(transformation: hit.worldTransform);
     final anchorAdded = await _arAnchorManager.addAnchor(anchor);
     if (anchorAdded != true) {
-      _arSessionManager.onError("Échec création ancrage");
+      _arSessionManager.onError!("Échec création ancrage");
       return;
     }
     _currentAnchor = anchor;
@@ -94,7 +94,7 @@ class _ARViewPageState extends State<ARViewPage> {
     if (nodeAdded == true) {
       _currentNode = node;
     } else {
-      _arSessionManager.onError("Échec d'ajout du modèle");
+      _arSessionManager.onError!("Échec d'ajout du modèle");
     }
   }
 
