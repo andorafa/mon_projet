@@ -1,55 +1,43 @@
 buildscript {
     ext.kotlin_version = '1.8.22'
+
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        // Baisser la version AGP à 7.4.2
+        // AGP compatible avec Flutter
         classpath 'com.android.tools.build:gradle:7.4.2'
-        // Conserver Kotlin à jour ou ajuster si nécessaire
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.22"
+        // Kotlin version compatible AGP + ar_flutter_plugin forcée
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        // Firebase services
         classpath 'com.google.gms:google-services:4.4.2'
-
     }
-
 }
-
-
-
-
 
 allprojects {
     repositories {
         google()
         mavenCentral()
     }
-
-    // Add this part -------------->
-    subprojects {
-        afterEvaluate { project ->
-            if (project.hasProperty('android')) {
-                project.android {
-                    if (namespace == null) {
-                        namespace project.group
-                    }
-                }
-            }
-        }
-    }
-    // until here
 }
 
 rootProject.buildDir = "../build"
 
-
-// Configuration des sous‑projets (séparation des build directories)
 subprojects {
+    // ➕ Répertoire de build spécifique
     project.buildDir = "${rootProject.buildDir}/${project.name}"
     project.evaluationDependsOn(":app")
 
-    // Injection du namespace pour Android Gradle Plugin 7.0+
+    // 🛠️ Fix : forcer Kotlin plugin dans ar_flutter_plugin
+    if (project.name == "ar_flutter_plugin") {
+        project.buildscript.dependencies.add(
+                "classpath", "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        )
+    }
+
+    // 🏷️ Injection automatique de namespace si manquant
     if (project.extensions.findByName('android') != null) {
         project.extensions.configure(com.android.build.gradle.BaseExtension) { androidExt ->
             if (androidExt.hasProperty('namespace')) {
@@ -61,11 +49,7 @@ subprojects {
     }
 }
 
-// tasks.register reste inchangé
-// Tâche clean pour supprimer le build directory global
+// 🧹 Tâche clean
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
-
-
-
