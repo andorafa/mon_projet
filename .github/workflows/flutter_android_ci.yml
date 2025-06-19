@@ -51,7 +51,7 @@ jobs:
             sleep 5
             
             # 🧪 Tests d'intégration
-            flutter test integration_test || exit 1
+            flutter test integration_test --no-enable-impeller || exit 1
             
             # 📸 Tentative de capture d'écran (facultative)
             echo "Tentative de capture d'écran..."
@@ -93,7 +93,7 @@ jobs:
 
       # 🏗️ Construire l’APK signé
       - name: Build signed APK
-        run: flutter build apk --release
+        run: flutter build apk --release --no-enable-impeller
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
