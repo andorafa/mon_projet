@@ -39,6 +39,14 @@ jobs:
         run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > $KEYSTORE_PATH
 
 
+      - name: Create key.properties file
+        run: |
+            echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
+            echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+            echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+            echo "storeFile=android/app/key.jks" >> android/key.properties
+
+
       # 🛠️ Fix PATH for sdkmanager
       - name: Set ANDROID_HOME and update PATH
         run: |
