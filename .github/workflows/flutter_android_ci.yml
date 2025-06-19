@@ -30,10 +30,11 @@ jobs:
       - name: Install Flutter dependencies
         run: flutter pub get
 
-      # 🧪 (Optionnel) Lancer les tests unitaires
+      # 🧪 Exécuter les tests unitaires
       - name: Run tests
         run: flutter test
 
+      # 🧪 Exécuter les tests d'intégration
       - name: Run integration tests
         run: flutter test integration_test
 
