@@ -43,3 +43,5 @@ class PayeTonKawaApp extends StatelessWidget {
     );
   }
 }
+
+// 🔧 Test: push de vérification GitHub Actions
