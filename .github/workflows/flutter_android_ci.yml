@@ -9,7 +9,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    name: Build & Deploy APK
+    name: Build & Tests & Deploy APK
 
     env:
       #KEYSTORE_PATH: android/app/key.jks
@@ -33,6 +33,9 @@ jobs:
       # 🧪 (Optionnel) Lancer les tests unitaires
       - name: Run tests
         run: flutter test
+
+      - name: Run integration tests
+        run: flutter test integration_test
 
       # 🔐 Restaurer le keystore à partir du secret encodé
       - name: Decode keystore from secret
