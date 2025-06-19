@@ -35,8 +35,16 @@ jobs:
         run: flutter test
 
       # 🧪 Exécuter les tests d'intégration
-      - name: Run integration tests
-        run: flutter test integration_test
+      - name: Run integration tests on Android Emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86_64
+          profile: pixel
+          emulator-options: -no-window -noaudio -gpu swiftshader_indirect
+          disable-animations: true
+          script: flutter test integration_test
 
       # 🔐 Restaurer le keystore à partir du secret encodé
       - name: Decode keystore from secret
