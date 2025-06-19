@@ -12,7 +12,7 @@ jobs:
     name: Build & Deploy APK
 
     env:
-      KEYSTORE_PATH: android/app/key.jks
+      #KEYSTORE_PATH: android/app/key.jks
       FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
     steps:
@@ -36,7 +36,7 @@ jobs:
 
       # 🔐 Restaurer le keystore à partir du secret encodé
       - name: Decode keystore from secret
-        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > $KEYSTORE_PATH
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
 
 
       - name: Create key.properties file
