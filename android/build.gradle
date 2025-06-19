@@ -31,11 +31,11 @@ subprojects {
     project.evaluationDependsOn(":app")
 
     // 🛠️ Fix : forcer Kotlin plugin dans ar_flutter_plugin
-    if (project.name == "ar_flutter_plugin") {
-        project.buildscript.dependencies.add(
-                "classpath", "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        )
-    }
+    //if (project.name == "ar_flutter_plugin") {
+        //project.buildscript.dependencies.add(
+                //"classpath", "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        //)
+    //}
 
     // 🏷️ Injection automatique de namespace si manquant
     if (project.extensions.findByName('android') != null) {
