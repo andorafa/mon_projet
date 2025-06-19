@@ -4,7 +4,7 @@ import 'package:test_app/pages/product_list_page.dart';
 
 void main() {
   testWidgets('Affiche le titre de la page produit', (WidgetTester tester) async {
-    await tester.pumpWidget(const MaterialApp(home: ProductListPage()));
+    await tester.pumpWidget(MaterialApp(home: ProductListPage()));
 
     expect(find.text('Liste des produits'), findsOneWidget);
   });

@@ -45,7 +45,11 @@ void main() {
 
     overrideClient = mockClient;
 
-    await tester.pumpWidget(const MaterialApp(home: ProductListPage()));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: ProductListPage(httpClient: MockClient()),
+      ),
+    );
     await tester.pumpAndSettle();
 
     // Vérifier que les produits mockés sont visibles

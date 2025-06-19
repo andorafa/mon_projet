@@ -33,7 +33,7 @@ class PayeTonKawaApp extends StatelessWidget {
           case '/':
             return MaterialPageRoute(builder: (_) => const AuthenticationPage());
           case '/products':
-            return MaterialPageRoute(builder: (_) => const ProductListPage());
+            return MaterialPageRoute(builder: (_) => ProductListPage());
           case '/scan':
             return MaterialPageRoute(builder: (_) => const QRScannerPage());
           default:

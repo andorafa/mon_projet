@@ -9,7 +9,11 @@ import 'authentication_page.dart';
 final _secureStorage = FlutterSecureStorage();
 
 class ProductListPage extends StatefulWidget {
-  const ProductListPage({Key? key}) : super(key: key);
+  final http.Client httpClient;
+
+  ProductListPage({Key? key, http.Client? httpClient})
+      : httpClient = httpClient ?? http.Client(),
+        super(key: key);
 
   @override
   State<ProductListPage> createState() => _ProductListPageState();
@@ -48,8 +52,7 @@ class _ProductListPageState extends State<ProductListPage> {
     final url = Uri.parse('https://payetonkawa-api.onrender.com/api/revendeurs/products');
     try {
 
-      final client = http.Client();
-      final response = await client.get(
+      final response = await widget.httpClient.get(
         url,
         headers: {
           'Content-Type': 'application/json',
@@ -82,7 +85,7 @@ class _ProductListPageState extends State<ProductListPage> {
     final apiKey = await _secureStorage.read(key: 'api_key');
     if (apiKey != null) {
       try {
-        await http.post(
+        await widget.httpClient.post(
           Uri.parse('https://payetonkawa-api.onrender.com/api/revendeurs/logout'),
           headers: {
             'Content-Type': 'application/json',
