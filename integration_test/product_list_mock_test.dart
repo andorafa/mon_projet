@@ -6,13 +6,14 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-/// ✅ MockClient personnalisé pour intercepter l'appel API
+/// 🧪 Client HTTP mocké — remplace l’appel à l’API produits
 class MockClient extends http.BaseClient {
   final http.Client _inner = http.Client();
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) {
     if (request.url.path.contains('/api/revendeurs/products')) {
+      // 🔹 JSON mocké avec caractères accentués
       final productsJson = json.encode([
         {
           'id': 1,
@@ -32,13 +33,19 @@ class MockClient extends http.BaseClient {
 
       print('📦 Mock API appelée. Réponse : $productsJson');
 
-      final mockResponse = http.Response(productsJson, 200);
+      // ✅ Encodage UTF-8 explicite pour éviter l’affichage "CafÃ©"
+      final encodedBody = utf8.encode(productsJson);
       return Future.value(http.StreamedResponse(
-        Stream.value(utf8.encode(mockResponse.body)),
-        mockResponse.statusCode,
-        headers: mockResponse.headers,
+        Stream.value(encodedBody),
+        200,
+        headers: {
+          'content-type': 'application/json; charset=utf-8',
+          'content-length': encodedBody.length.toString(),
+        },
       ));
     }
+
+    // Sinon, comportement par défaut
     return _inner.send(request);
   }
 }
@@ -49,6 +56,7 @@ void main() {
   testWidgets('Liste des produits mockée s’affiche', (WidgetTester tester) async {
     print('🔍 DÉBUT DU TEST');
 
+    // 🗝️ Simule la clé d’authentification
     const testApiKey = 'mock-api-key';
     final storage = const FlutterSecureStorage();
     await storage.write(key: 'api_key', value: testApiKey);
@@ -57,7 +65,7 @@ void main() {
 
     final mockClient = MockClient();
 
-    /// ✅ Lancement de la page avec injection du client mocké
+    // 🧪 Injection du MockClient dans ProductListPage
     await tester.pumpWidget(
       MaterialApp(
         home: ProductListPage(httpClient: mockClient),
@@ -65,18 +73,17 @@ void main() {
     );
 
     print('✅ Widget initial pompé.');
-
     await tester.pumpAndSettle();
     print('✅ pumpAndSettle terminé.');
 
-    // 🧪 Étape de debug — Affiche tous les widgets Text visibles
+    // 🔍 Debug : afficher tous les textes visibles
     final allTexts = find.byType(Text);
     for (final element in allTexts.evaluate()) {
       final widget = element.widget as Text;
       print('🧐 TEXTE RENDU: "${widget.data}"');
     }
 
-    // ✅ Remplace find.text() par une méthode plus robuste (qui ignore les petits écarts)
+    // ✅ Test avec Predicate plus souple (évite les soucis d’accents, style, etc.)
     expect(
       find.byWidgetPredicate(
             (widget) => widget is Text && widget.data?.contains('Café Moka') == true,
