@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'fake_scanner_page.dart';
 import 'qr_scanner_page.dart';
 
 final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
@@ -88,6 +89,10 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
 
     // 👉 Utilisation d’un mock si le test le demande
     if (kUseMockScanner) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const FakeScannerPage()),
+      );
       scannedKey = 'mock-api-key';
     } else {
       scannedKey = await Navigator.push<String?>(
@@ -95,6 +100,7 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
         MaterialPageRoute(builder: (_) => const QRScannerPage()),
       );
     }
+
     if (scannedKey != null && scannedKey.isNotEmpty) {
       await _authenticateUser(scannedKey);
     }

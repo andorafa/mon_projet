@@ -1,4 +1,4 @@
-/*
+
 
 import 'package:flutter/material.dart';
 
@@ -17,4 +17,4 @@ class FakeScannerPage extends StatelessWidget {
 }
 
 
- */
+
