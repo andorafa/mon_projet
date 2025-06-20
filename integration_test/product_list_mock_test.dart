@@ -35,8 +35,8 @@ void main() {
   testWidgets('Liste des produits mockée s’affiche', (WidgetTester tester) async {
     // Pré-remplir la clé API simulée
     const testApiKey = 'mock-api-key';
-    final storage = const FlutterSecureStorage();
-    await storage.write(key: 'api_key', value: testApiKey);
+    //final storage = const FlutterSecureStorage();
+    //await storage.write(key: 'api_key', value: testApiKey);
 
     // Lancer la page avec un mock client
     http.Client originalClient = http.Client();
@@ -45,11 +45,23 @@ void main() {
 
     overrideClient = mockClient;
 
+    //await tester.pumpWidget(
+      //MaterialApp(
+        //home: ProductListPage(httpClient: MockClient()),
+      //),
+    //);
+
     await tester.pumpWidget(
       MaterialApp(
-        home: ProductListPage(httpClient: MockClient()),
+        onGenerateRoute: (_) => MaterialPageRoute(
+          builder: (_) => ProductListPage(httpClient: MockClient()),
+          settings: const RouteSettings(arguments: 'mock-api-key'),
+        ),
       ),
     );
+
+
+
     await tester.pumpAndSettle();
 
     // Vérifier que les produits mockés sont visibles
