@@ -51,7 +51,7 @@ jobs:
             sleep 5
             
             # 🧪 Tests d'intégration
-            flutter test integration_test --no-enable-impeller || exit 1
+            flutter test integration_test --dart-define=USE_MOCK_SCANNER=true || exit 1
             
             # 📸 Tentative de capture d'écran (facultative)
             echo "Tentative de capture d'écran..."

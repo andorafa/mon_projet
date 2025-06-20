@@ -6,6 +6,11 @@ import 'qr_scanner_page.dart';
 
 final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
+
+// 👉 Ajout d’un booléen global contrôlé via --dart-define pour les tests
+const bool kUseMockScanner =
+bool.fromEnvironment('USE_MOCK_SCANNER', defaultValue: false);
+
 class AuthenticationPage extends StatefulWidget {
   const AuthenticationPage({Key? key}) : super(key: key);
 
@@ -79,10 +84,17 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
     // ✅ Réveil du backend
     await _wakeUpServer();
 
-    final scannedKey = await Navigator.push<String?>(
-      context,
-      MaterialPageRoute(builder: (_) => const QRScannerPage()),
-    );
+    String? scannedKey;
+
+    // 👉 Utilisation d’un mock si le test le demande
+    if (kUseMockScanner) {
+      scannedKey = 'mock-api-key';
+    } else {
+      scannedKey = await Navigator.push<String?>(
+        context,
+        MaterialPageRoute(builder: (_) => const QRScannerPage()),
+      );
+    }
     if (scannedKey != null && scannedKey.isNotEmpty) {
       await _authenticateUser(scannedKey);
     }
