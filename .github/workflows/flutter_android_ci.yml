@@ -93,7 +93,8 @@ jobs:
 
       # 🏗️ Construire l’APK signé
       - name: Build signed APK
-        run: flutter build apk --release --no-enable-impeller
+        run: flutter build apk --release
+        #run: flutter build apk --release --no-enable-impeller
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
