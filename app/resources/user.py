@@ -7,7 +7,9 @@ from app.utils.email import send_email
 ns = Namespace("users", description="Création d'utilisateur")
 
 user_model = ns.model("User", {
-    "email": fields.String(required=True)
+    "email": fields.String(required=True),
+    "first_name": fields.String(required=True),
+    "last_name": fields.String(required=True)
 })
 
 @ns.route("")
@@ -16,15 +18,21 @@ class UserAPI(Resource):
     def post(self):
         parser = reqparse.RequestParser()
         parser.add_argument("email", type=str, required=True)
+        parser.add_argument("first_name", type=str, required=True)
+        parser.add_argument("last_name", type=str, required=True)
         args = parser.parse_args()
         email = args["email"]
+        first_name = args["first_name"]
+        last_name = args["last_name"]
 
         user = User.query.filter_by(email=email).first()
         user_key = str(uuid.uuid4())
         if user:
             user.api_key = user_key
+            user.first_name = first_name
+            user.last_name = last_name
         else:
-            user = User(email=email, api_key=user_key)
+            user = User(email=email, api_key=user_key, first_name=first_name, last_name=last_name)
             db.session.add(user)
         db.session.commit()
 
