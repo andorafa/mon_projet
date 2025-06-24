@@ -35,10 +35,16 @@ jobs:
           api-level: 30
           arch: x86_64
           target: google_apis
-          profile: Pixel
+          profile: Nexus 5
           script: |
             adb devices
             adb wait-for-device
+            echo "🔄 Redémarrage du serveur ADB pour stabiliser la connexion..."
+            adb kill-server
+            adb start-server
+            adb devices
+            adb wait-for-device
+            
             echo "⏳ Attente que l'émulateur soit complètement initialisé..."
             until [[ "$(adb shell getprop sys.boot_completed | tr -d '\r')" == "1" ]]; do
               echo "… boot non terminé …"
