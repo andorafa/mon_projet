@@ -35,7 +35,7 @@ jobs:
           api-level: 30
           arch: x86_64
           target: google_apis
-          profile: Pixel 2
+          profile: Pixel
           script: |
             adb devices
             adb wait-for-device
