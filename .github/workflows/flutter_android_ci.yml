@@ -44,13 +44,15 @@ jobs:
           script: |
             adb devices
             adb wait-for-device
-            adb shell getprop sys.boot_completed
-            echo "✅ Émulateur lancé avec succès"
-            
-            # 🐢 Petit délai pour garantir la stabilité du système
-            sleep 5
-            
-            # 🧪 Tests d'intégration
+            echo "⏳ Attente de l'initialisation complète de l'émulateur..."
+            until adb shell getprop sys.boot_completed | grep -m 1 '1'; do sleep 1; done
+            echo "✅ Émulateur prêt"
+  
+            # 🐢 Petit délai supplémentaire pour garantir la stabilité
+            sleep 10
+  
+
+  # 🧪 Tests d'intégration
             flutter test integration_test --dart-define=USE_MOCK_SCANNER=true || exit 1
             
             # 📸 Tentative de capture d'écran (facultative)
