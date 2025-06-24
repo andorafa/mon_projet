@@ -6,4 +6,5 @@ def test_product_repr():
 
 def test_user_repr():
     user = User(email="toto@test.com", api_key="xyz", first_name="Toto", last_name="Test")
-    assert repr(user) == "<User toto@test.com>"
+    assert repr(user) == "<User Toto Test (toto@test.com)>"
+
