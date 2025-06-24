@@ -20,6 +20,9 @@ class AuthenticationPage extends StatefulWidget {
 
 class _AuthenticationPageState extends State<AuthenticationPage> {
   final TextEditingController emailController = TextEditingController();
+  final TextEditingController firstNameController = TextEditingController();
+  final TextEditingController lastNameController = TextEditingController();
+
   String message = '';
   bool isLoading = false;
   bool _initialized = false;
@@ -66,7 +69,8 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({'email': email}),
+        body: json.encode({'email': email,'first_name': firstNameController.text.trim(),
+          'last_name': lastNameController.text.trim(),}),
       );
       if (response.statusCode == 201) {
         setState(() => message = "Inscription réussie ! Vérifiez votre email pour le QR Code.");
@@ -165,9 +169,16 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
                 const SizedBox(height: 20),
               ],
               TextField(
+                controller: firstNameController,
+                decoration: const InputDecoration(labelText: 'Prénom'),
+              ),
+              TextField(
+                controller: lastNameController,
+                decoration: const InputDecoration(labelText: 'Nom'),
+              ),
+              TextField(
                 controller: emailController,
                 decoration: const InputDecoration(labelText: 'Email'),
-                keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 20),
               if (isLoading)
