@@ -58,9 +58,17 @@ jobs:
 
             echo "✅ Émulateur prêt et services disponibles"
             sleep 5
-
-            flutter test integration_test --dart-define=USE_MOCK_SCANNER=true || exit 1
-
+            
+            
+            echo "🧪 Lancement des tests d'intégration..."
+            if flutter test integration_test --dart-define=USE_MOCK_SCANNER=true; then
+                echo "✅ Tests d'intégration réussis"
+            else
+                echo "❌ Échec des tests d'intégration"
+                exit 1
+            fi
+            
+            
             echo "Tentative de capture d'écran..."
             adb shell screencap -p /data/local/tmp/screen.png || echo "⚠️ Capture échouée"
             adb pull /data/local/tmp/screen.png screen.png || echo "⚠️ Pull échoué ou fichier inexistant"
