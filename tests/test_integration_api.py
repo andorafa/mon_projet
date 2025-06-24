@@ -4,7 +4,9 @@ from app.models import Product
 
 # ✅ Test inscription d'utilisateur (POST /api/users)
 def test_user_creation(client):
-    response = client.post("/api/users", json={"email": "integration@test.com"})
+    response = client.post("/api/users", json={"email": "integration@test.com",
+    "first_name": "Integration",
+    "last_name": "Test"})
     assert response.status_code == 201
     data = response.get_json()
     assert "api_key" in data
@@ -13,7 +15,9 @@ def test_user_creation(client):
 # ✅ Test authentification avec clé générée
 def test_authentication_flow(client):
     # Créer un utilisateur
-    res = client.post("/api/users", json={"email": "flow@test.com"})
+    res = client.post("/api/users", json={"email": "flow@test.com",
+    "first_name": "Flow",
+    "last_name": "Test"})
     assert res.status_code == 201
     api_key = res.get_json()["api_key"]
 

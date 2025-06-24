@@ -41,7 +41,9 @@ def test_logout_success(client):
 
 
 def test_user_creation(client):
-    res = client.post("/api/users", json={"email": "newuser@test.com"})
+    res = client.post("/api/users", json={"email": "newuser@test.com",
+    "first_name": "New",
+    "last_name": "User"})
     assert res.status_code == 201
     assert "api_key" in res.get_json()
 
