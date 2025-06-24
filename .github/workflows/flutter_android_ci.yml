@@ -7,9 +7,93 @@ on:
     branches: [mobile-app-secours]
 
 jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    name: Run Unit Tests
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.4'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run unit tests
+        run: flutter test
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    name: Run Integration Tests (AVD)
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.32.4'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Start Emulator and Run Integration Tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          target: google_apis
+          profile: Nexus 5
+          script: |
+            adb wait-for-device
+            echo "🔄 Restart ADB to stabilize emulator..."
+            adb kill-server
+            adb start-server
+            adb devices
+            adb wait-for-device
+
+            until [[ "$(adb shell getprop sys.boot_completed | tr -d '\r')" == "1" ]]; do
+              echo "Waiting for emulator boot..."
+              sleep 2
+            done
+
+            until adb shell pm list packages > /dev/null 2>&1; do
+              echo "Waiting for Package Manager..."
+              sleep 2
+            done
+
+            echo "🧪 Running integration tests..."
+            if flutter test integration_test --dart-define=USE_MOCK_SCANNER=true; then
+              echo "✅ Integration tests passed"
+            else
+              echo "❌ Integration tests failed"
+              exit 1
+            fi
+
+            echo "📸 Taking screenshot..."
+            adb shell screencap -p /data/local/tmp/screen.png || echo "⚠️ Screenshot failed"
+            adb pull /data/local/tmp/screen.png screen.png || echo "⚠️ Pull failed"
+
+            echo "🛑 Killing emulator (error tolerant)"
+            sleep 5
+            adb emu kill || echo "⚠️ adb emu kill failed — tolerated"
+            adb kill-server || true
+
+      - name: Upload screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: emulator-screen
+          path: screen.png
+
   build-and-deploy:
     runs-on: ubuntu-latest
-    name: Build & Tests & Deploy APK
+    name: Build & Deploy APK
+    needs: [unit-tests]
 
     env:
       FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
@@ -23,68 +107,8 @@ jobs:
         with:
           flutter-version: '3.32.4'
 
-      - name: Install Flutter dependencies
+      - name: Install dependencies
         run: flutter pub get
-
-      - name: Run unit tests
-        run: flutter test
-
-      - name: 🤖 Start Android Emulator
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 30
-          arch: x86_64
-          target: google_apis
-          profile: Nexus 5
-          script: |
-            adb devices
-            adb wait-for-device
-            echo "🔄 Redémarrage du serveur ADB pour stabiliser la connexion..."
-            adb kill-server
-            adb start-server
-            adb devices
-            adb wait-for-device
-            
-            echo "⏳ Attente que l'émulateur soit complètement initialisé..."
-            until [[ "$(adb shell getprop sys.boot_completed | tr -d '\r')" == "1" ]]; do
-              echo "… boot non terminé …"
-              sleep 2
-            done
-
-            until adb shell pm list packages > /dev/null 2>&1; do
-              echo "… Package Manager non prêt …"
-              sleep 2
-            done
-
-            echo "✅ Émulateur prêt et services disponibles"
-            sleep 5
-            
-            
-            echo "🧪 Lancement des tests d'intégration..."
-            if flutter test integration_test --dart-define=USE_MOCK_SCANNER=true; then
-                echo "✅ Tests d'intégration réussis"
-            else
-                echo "❌ Échec des tests d'intégration"
-                exit 1
-            fi
-            
-            
-            echo "Tentative de capture d'écran..."
-            adb shell screencap -p /data/local/tmp/screen.png || echo "⚠️ Capture échouée"
-            adb pull /data/local/tmp/screen.png screen.png || echo "⚠️ Pull échoué ou fichier inexistant"
-            
-            
-            echo "🛑 Fermeture de l'émulateur"
-            sleep 10
-            adb emu kill || echo "⚠️ adb emu kill a échoué — probablement à cause du système mort (DeadSystemException)"
-            adb kill-server || true
-            
-
-      - name: 🖼️ Upload emulator screenshot
-        uses: actions/upload-artifact@v4
-        with:
-          name: emulator-screen
-          path: screen.png
 
       - name: Decode keystore from secret
         run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
