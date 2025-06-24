@@ -75,7 +75,8 @@ jobs:
             
             
             echo "🛑 Fermeture de l'émulateur"
-            adb emu kill || echo "⚠️ Erreur lors de la fermeture de l'émulateur ignorée"
+            sleep 10
+            adb emu kill || echo "⚠️ adb emu kill a échoué — probablement à cause du système mort (DeadSystemException)"
             adb kill-server || true
             
 
