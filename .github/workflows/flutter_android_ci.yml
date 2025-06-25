@@ -44,6 +44,10 @@ jobs:
           script: |
             adb devices
             adb wait-for-device
+            
+            echo "🔄 Tentative de suppression de l'app s'il en existe une ancienne version"
+            adb uninstall com.example.test_app || true
+  
 
             adb shell getprop sys.boot_completed
             echo "✅ Émulateur lancé avec succès"
