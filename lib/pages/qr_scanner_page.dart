@@ -25,14 +25,13 @@ class _QRScannerPageState extends State<QRScannerPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Scanner QR Code"),
-        actions: [
-          IconButton(
-            key: Key('testBackButton'),
-            icon: Icon(Icons.close),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ],
+        leading: IconButton(
+          key: const Key('testBackButton'),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
+
 
       body: Column(
         children: [

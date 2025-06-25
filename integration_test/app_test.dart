@@ -52,7 +52,8 @@ void main() {
     }
 
     // Retour à l’écran précédent
-    await tester.tap(find.byKey(Key('testBackButton')));
+    expect(find.byKey(const Key('testBackButton')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('testBackButton')));
     await tester.pumpAndSettle();
 
     // Reviens à l’accueil
