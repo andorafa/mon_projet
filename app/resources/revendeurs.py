@@ -1,5 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 from flask import request, abort
+from app.mock_data.mock_erp_data import get_mock_products
 from app.models import Product, User
 from app import db
 
@@ -24,7 +25,7 @@ class RevendeursAPI(Resource):
         user = User.query.filter_by(api_key=api_key).first()
         if not user:
             abort(401, description="Clé API invalide.")
-        return Product.query.all()
+        return get_mock_products()
 
 @ns.route("/authenticate")
 class AuthenticateAPI(Resource):

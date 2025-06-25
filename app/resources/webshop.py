@@ -1,5 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 from flask import request, abort
+from app.mock_data.mock_erp_data import get_mock_products
 from app.models import Product, User
 from app.config import Config
 
@@ -23,4 +24,4 @@ class WebshopAPI(Resource):
         user = User.query.filter_by(api_key=api_key).first()
         if not api_key or (not user and api_key != Config.API_WEBSHOP_KEY):
             abort(401, description="Clé API invalide ou manquante")
-        return Product.query.all()
+        return get_mock_products()
