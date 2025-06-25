@@ -52,7 +52,7 @@ void main() {
     }
 
     // Retour à l’écran précédent
-    await tester.pageBack();
+    await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
 
     // Reviens à l’accueil
