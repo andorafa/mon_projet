@@ -7,111 +7,71 @@ on:
     branches: [mobile-app-secours]
 
 jobs:
-  unit-tests:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    name: Run Unit Tests
+    name: Build & Tests & Deploy APK
+
+    env:
+      #KEYSTORE_PATH: android/app/key.jks
+      FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
 
     steps:
+      # 📥 Récupérer le code source
       - name: Checkout source code
         uses: actions/checkout@v3
 
+      # ⚙️ Configurer Flutter
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.32.4'
 
-      - name: Install dependencies
+      # 📦 Installer les dépendances
+      - name: Install Flutter dependencies
         run: flutter pub get
 
-      - name: Run unit tests
+      # 🧪 Exécuter les tests unitaires
+      - name: Run tests
         run: flutter test
 
-  integration-tests:
-    runs-on: ubuntu-latest
-    name: Run Integration Tests (AVD)
-
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v3
-
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.32.4'
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Start Emulator and Run Integration Tests
+        # 📱 Lancer un émulateur Android pour les tests d'intégration
+      - name: 🤖 Start Android Emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 29
+          api-level: 30
           arch: x86_64
-          target: google_apis
-          profile: Nexus 5
+          profile: Nexus 6
           script: |
-            adb wait-for-device
-            echo "🔄 Restart ADB to stabilize emulator..."
-            adb kill-server
-            adb start-server
             adb devices
             adb wait-for-device
 
-            until [[ "$(adb shell getprop sys.boot_completed | tr -d '\r')" == "1" ]]; do
-              echo "Waiting for emulator boot..."
-              sleep 2
-            done
-
-            until adb shell pm list packages > /dev/null 2>&1; do
-              echo "Waiting for Package Manager..."
-              sleep 2
-            done
-
-            echo "🧪 Running integration tests..."
-            if flutter test integration_test --dart-define=USE_MOCK_SCANNER=true; then
-              echo "✅ Integration tests passed"
-            else
-              echo "❌ Integration tests failed"
-              exit 1
-            fi
-
-            echo "📸 Taking screenshot..."
-            adb shell screencap -p /data/local/tmp/screen.png || echo "⚠️ Screenshot failed"
-            adb pull /data/local/tmp/screen.png screen.png || echo "⚠️ Pull failed"
-
-            echo "🛑 Killing emulator (error tolerant)"
+            adb shell getprop sys.boot_completed
+            echo "✅ Émulateur lancé avec succès"
+            
+            # 🐢 Petit délai supplémentaire pour garantir la stabilité
             sleep 5
-            adb emu kill || echo "⚠️ adb emu kill failed — tolerated"
-            adb kill-server || true
 
-      - name: Upload screenshot
+            # 🧪 Tests d'intégration
+            flutter test integration_test --dart-define=USE_MOCK_SCANNER=true || exit 1
+            
+            # 📸 Tentative de capture d'écran (facultative)
+            echo "Tentative de capture d'écran..."
+            
+            adb shell screencap -p /data/local/tmp/screen.png || echo "⚠️ Capture échouée"
+            adb pull /data/local/tmp/screen.png screen.png || echo "⚠️ Pull échoué ou fichier inexistant"
+
+
+      # 💾 (Optionnel) Récupérer la capture d’écran pour debug
+      - name: 🖼️ Upload emulator screenshot
         uses: actions/upload-artifact@v4
         with:
           name: emulator-screen
           path: screen.png
 
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    name: Build & Deploy APK
-    needs: [unit-tests]
-
-    env:
-      FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v3
-
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.32.4'
-
-      - name: Install dependencies
-        run: flutter pub get
-
+      # 🔐 Restaurer le keystore à partir du secret encodé
       - name: Decode keystore from secret
         run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
+
 
       - name: Create key.properties file
         run: |
@@ -120,30 +80,37 @@ jobs:
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=key.jks" >> android/key.properties
 
+
+      # 🛠️ Fix PATH for sdkmanager
       - name: Set ANDROID_HOME and update PATH
         run: |
           echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
 
+      # ✅ Accept licenses + install correct NDK
       - name: Accept Android SDK licenses
         run: yes | sdkmanager --licenses
 
       - name: Install NDK 27.0.12077973
         run: sdkmanager "ndk;27.0.12077973"
 
+      # 🏗️ Construire l’APK signé
       - name: Build signed APK
         run: flutter build apk --release
+        #run: flutter build apk --release --no-enable-impeller
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
+      # 📎 Upload de l’APK comme artifact GitHub
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release
           path: build/app/outputs/flutter-apk/app-release.apk
 
+      # 🚀 Déploiement Firebase App Distribution
       - name: Deploy to Firebase App Distribution
         run: |
           curl -sL https://firebase.tools | bash
