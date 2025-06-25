@@ -23,7 +23,17 @@ class _QRScannerPageState extends State<QRScannerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Scanner QR Code"), leading: const BackButton(),),
+      appBar: AppBar(
+        title: const Text("Scanner QR Code"),
+        actions: [
+          IconButton(
+            key: Key('testBackButton'),
+            icon: Icon(Icons.close),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      ),
+
       body: Column(
         children: [
           Expanded(
