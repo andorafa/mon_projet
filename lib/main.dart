@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+
 import 'pages/ar_view_page.dart';
 import 'pages/qr_scanner_page.dart';
 import 'pages/authentication_page.dart';
@@ -7,12 +9,14 @@ import 'pages/product_list_page.dart';
 
 final secureStorage = FlutterSecureStorage();
 
-void main() {
-  runApp(const PayeTonKawaApp());
+void main({http.Client? httpClient}) {
+  runApp(PayeTonKawaApp(httpClient: httpClient ?? http.Client()));
 }
 
 class PayeTonKawaApp extends StatelessWidget {
-  const PayeTonKawaApp({Key? key}) : super(key: key);
+  final http.Client httpClient;
+
+  const PayeTonKawaApp({Key? key, required this.httpClient}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +37,10 @@ class PayeTonKawaApp extends StatelessWidget {
           case '/':
             return MaterialPageRoute(builder: (_) => const AuthenticationPage());
           case '/products':
-            return MaterialPageRoute(builder: (_) => ProductListPage());
+          // Transmission correcte du httpClient mocké ici
+            return MaterialPageRoute(
+              builder: (_) => ProductListPage(httpClient: httpClient),
+            );
           case '/scan':
             return MaterialPageRoute(builder: (_) => const QRScannerPage());
           default:
@@ -43,5 +50,3 @@ class PayeTonKawaApp extends StatelessWidget {
     );
   }
 }
-
-// 🔧 Test: push de vérification GitHub Actions

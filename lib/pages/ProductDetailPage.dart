@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import '../services/api_services.dart';
 
 class ProductDetailPage extends StatelessWidget {
   final int productId;
+  final http.Client? httpClient;  // ajout
 
-  const ProductDetailPage({super.key, required this.productId});
+  const ProductDetailPage({
+    Key? key,
+    required this.productId,
+    this.httpClient,  // ajout
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Détail du Produit')),
-      body: FutureBuilder<Map<String, dynamic>?> (
-        future: fetchProductDetail(productId),
+      body: FutureBuilder<Map<String, dynamic>?>(
+        future: fetchProductDetail(productId, client: httpClient),  // passe httpClient ici
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -19,6 +25,7 @@ class ProductDetailPage extends StatelessWidget {
             return const Center(child: Text('Erreur de chargement'));
           } else {
             final product = snapshot.data!;
+            final modelUrl = product['model_url'];
             return Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -69,7 +76,6 @@ class ProductDetailPage extends StatelessWidget {
                   Center(
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        final modelUrl = product['model_url'];
                         if (modelUrl == null || modelUrl.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -79,7 +85,6 @@ class ProductDetailPage extends StatelessWidget {
                           );
                           return;
                         }
-
                         Navigator.pushNamed(
                           context,
                           '/ar',

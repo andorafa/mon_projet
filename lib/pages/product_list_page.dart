@@ -10,8 +10,9 @@ final _secureStorage = FlutterSecureStorage();
 
 class ProductListPage extends StatefulWidget {
   final http.Client httpClient;
+  final String? apiKey;  // clé injectée optionnelle
 
-  ProductListPage({Key? key, http.Client? httpClient})
+  ProductListPage({Key? key, http.Client? httpClient, this.apiKey})
       : httpClient = httpClient ?? http.Client(),
         super(key: key);
 
@@ -27,7 +28,7 @@ class _ProductListPageState extends State<ProductListPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final argKey = ModalRoute.of(context)?.settings.arguments as String?;
+    final argKey = widget.apiKey ?? ModalRoute.of(context)?.settings.arguments as String?;
     if (argKey != null && argKey.isNotEmpty) {
       _fetchProducts(argKey);
     } else {
@@ -51,7 +52,6 @@ class _ProductListPageState extends State<ProductListPage> {
     });
     final url = Uri.parse('https://payetonkawa-api.onrender.com/api/revendeurs/products');
     try {
-
       final response = await widget.httpClient.get(
         url,
         headers: {
@@ -60,6 +60,8 @@ class _ProductListPageState extends State<ProductListPage> {
         },
       );
 
+      print('DEBUG _fetchProducts status: ${response.statusCode}');
+      print('DEBUG _fetchProducts body: ${response.body}');
 
       if (response.statusCode == 200) {
         final body = json.decode(response.body);
@@ -93,7 +95,7 @@ class _ProductListPageState extends State<ProductListPage> {
           },
         );
       } catch (_) {
-        // Ignorer les erreurs de déconnexion silencieusement
+        // Ignorer les erreurs silencieusement
       }
     }
 
@@ -106,7 +108,6 @@ class _ProductListPageState extends State<ProductListPage> {
       ),
           (route) => false,
     );
-
   }
 
   @override

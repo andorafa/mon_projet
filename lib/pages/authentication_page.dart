@@ -6,8 +6,7 @@ import 'qr_scanner_page.dart';
 
 final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
-
-// 👉 Ajout d’un booléen global contrôlé via --dart-define pour les tests
+// Booléen global contrôlé via --dart-define pour les tests
 const bool kUseMockScanner =
 bool.fromEnvironment('USE_MOCK_SCANNER', defaultValue: false);
 
@@ -33,7 +32,9 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
     if (!_initialized) {
       final arg = ModalRoute.of(context)?.settings.arguments as String?;
       if (arg != null && arg.isNotEmpty) {
-        message = arg;
+        setState(() {
+          message = arg;
+        });
       }
       _initialized = true;
     }
@@ -42,6 +43,8 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
   @override
   void dispose() {
     emailController.dispose();
+    firstNameController.dispose();
+    lastNameController.dispose();
     super.dispose();
   }
 
@@ -57,9 +60,11 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
   Future<void> _registerAndSendQRCode() async {
     final email = emailController.text.trim();
     if (email.isEmpty) {
+      if (!mounted) return;
       setState(() => message = "Veuillez entrer un email.");
       return;
     }
+    if (!mounted) return;
     setState(() {
       isLoading = true;
       message = '';
@@ -69,28 +74,32 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({'email': email,'first_name': firstNameController.text.trim(),
-          'last_name': lastNameController.text.trim(),}),
+        body: json.encode({
+          'email': email,
+          'first_name': firstNameController.text.trim(),
+          'last_name': lastNameController.text.trim(),
+        }),
       );
+      if (!mounted) return;
       if (response.statusCode == 201) {
         setState(() => message = "Inscription réussie ! Vérifiez votre email pour le QR Code.");
       } else {
         setState(() => message = "Erreur d'inscription : ${response.statusCode}");
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() => message = "Erreur de connexion à l'API : $e");
     } finally {
+      if (!mounted) return;
       setState(() => isLoading = false);
     }
   }
 
   Future<void> _scanQRCodeAndAuthenticate() async {
-    // ✅ Réveil du backend
     await _wakeUpServer();
 
     String? scannedKey;
 
-    // 👉 Utilisation d’un mock si le test le demande
     if (kUseMockScanner) {
       scannedKey = 'mock-api-key';
       debugPrint("✅ Mode test activé : clé mockée injectée");
@@ -107,10 +116,14 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
   }
 
   Future<void> _authenticateUser(String apiKey) async {
+    debugPrint('Authenticating with API key: $apiKey');
+
+    if (!mounted) return;
     setState(() {
       isLoading = true;
       message = '';
     });
+
     final url = Uri.parse('https://payetonkawa-api.onrender.com/api/revendeurs/authenticate');
     try {
       final response = await http.post(
@@ -120,6 +133,7 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
           'x-api-key': apiKey,
         },
       );
+      if (!mounted) return;
       if (response.statusCode == 200) {
         await _secureStorage.write(key: 'api_key', value: apiKey);
         setState(() => message = 'Authentification réussie !');
@@ -142,8 +156,10 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
         setState(() => message = errMsg.isNotEmpty ? errMsg : 'Erreur d\'authentification : ${response.statusCode}');
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() => message = "Erreur réseau : $e");
     } finally {
+      if (!mounted) return;
       setState(() => isLoading = false);
     }
   }
