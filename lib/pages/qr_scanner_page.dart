@@ -22,6 +22,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint("📸 QRScannerPage build déclenché");
     return Scaffold(
       appBar: AppBar(
         title: const Text("Scanner QR Code"),
