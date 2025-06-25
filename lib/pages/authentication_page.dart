@@ -93,6 +93,7 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
     // 👉 Utilisation d’un mock si le test le demande
     if (kUseMockScanner) {
       scannedKey = 'mock-api-key';
+      debugPrint("✅ Mode test activé : clé mockée injectée");
     } else {
       scannedKey = await Navigator.push<String?>(
         context,
@@ -166,6 +167,14 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
                   ),
                   textAlign: TextAlign.center,
                 ),
+                if (kUseMockScanner)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      '🔧 Mode TEST actif (clé mockée)',
+                      style: TextStyle(color: Colors.orange, fontSize: 12),
+                    ),
+                  ),
                 const SizedBox(height: 20),
               ],
               TextField(
