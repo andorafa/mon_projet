@@ -24,4 +24,4 @@ class WebshopAPI(Resource):
         user = User.query.filter_by(api_key=api_key).first()
         if not api_key or (not user and api_key != Config.API_WEBSHOP_KEY):
             abort(401, description="Clé API invalide ou manquante")
-        return get_mock_products()
+        return Product.query.all()

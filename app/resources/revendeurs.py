@@ -25,7 +25,7 @@ class RevendeursAPI(Resource):
         user = User.query.filter_by(api_key=api_key).first()
         if not user:
             abort(401, description="Clé API invalide.")
-        return get_mock_products()
+        return Product.query.all()
 
 @ns.route("/authenticate")
 class AuthenticateAPI(Resource):
