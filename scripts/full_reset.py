@@ -2,69 +2,110 @@
 
 import sys
 import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+import requests
 from sqlalchemy import text
 from app import create_app, db
-from app.models import Product
+from app.models import Product, Customer
+from app.config import Config
 
 app = create_app()
 
-def reset_and_populate():
-    with app.app_context():
-        print("📦 Création des tables (si inexistantes)...")
-        db.create_all()
+def reset_and_populate_erp():
+    print("\n📦 [ERP] Réinitialisation de la table Product...")
+    inspector = db.inspect(db.engine)
+    if 'product' not in inspector.get_table_names():
+        print("❌ Table 'product' non trouvée. Vérifiez vos migrations ou vos modèles.")
+        return
 
-        # Vérifie si la table 'products' existe bien
-        inspector = db.inspect(db.engine)
-        if 'product' not in inspector.get_table_names():
-            print("❌ Table 'product' non trouvée. Assurer que le modèle est correct.")
-            return
+    db.session.execute(text("DELETE FROM product;"))
+    db.session.commit()
 
-        # Nettoyage sécurisé selon le type de base
-        database_url = app.config['SQLALCHEMY_DATABASE_URI']
+    print("🔎 Téléchargement des produits depuis l'API mock ERP...")
+    try:
+        response = requests.get(f"{Config.MOCK_API_URL}/products", timeout=10)
+        response.raise_for_status()
+        products_mock = response.json()
+    except Exception as e:
+        print(f"❌ Échec récupération API mock ERP : {e}")
+        return
+
+    produits = []
+    for p in products_mock:
         try:
-            if database_url.startswith("sqlite"):
-                print("⚡ Base SQLite ➔ DELETE FROM...")
-                db.session.execute(text("DELETE FROM product;"))
-            else:
-                print("⚡ Base PostgreSQL ➔ TRUNCATE TABLE...")
-                db.session.execute(text("TRUNCATE TABLE product RESTART IDENTITY CASCADE;"))
-            db.session.commit()
-            print("✅ Table 'product' vidée.")
-        except Exception as e:
-            print(f"❌ Erreur pendant la suppression : {e}")
-            return
-
-        # Remplissage des produits avec model_url
-        produits = [
-            Product(
-                name="Machine à Café",
-                description="Machine professionnelle pour cafés gourmets",
-                price=250.0,
-                model_url="https://drive.google.com/uc?export=download&id=1Oq_vVepdhZqbhX2Gm7nVcQqttLrlwZWQ"
-            ),
-            Product(
-                name="Cappuccino",
-                description="Délicieux cappuccino crémeux avec une touche de cacao",
-                price=50.0,
-                model_url="https://drive.google.com/uc?export=download&id=1PsD-QhE0z1R-v4mcY8-W0CFw746oLUXl"
-            ),
-            Product(
-                name="Thé Vert",
-                description="Thé bio rafraîchissant",
-                price=2.5,
+            price_str = str(p.get("details", {}).get("price", "0")).replace(',', '.')
+            produits.append(Product(
+                name=p["name"],
+                description=p.get("details", {}).get("description", ""),
+                price=float(price_str),
                 model_url=""
-            ),
-        ]
+            ))
+        except Exception as e:
+            print(f"⚠️ Produit ignoré : {e}")
 
+    if produits:
         try:
             db.session.add_all(produits)
             db.session.commit()
-            print("✅ Produits insérés avec succès.")
+            print(f"✅ {len(produits)} produits insérés avec succès.")
         except Exception as e:
-            print(f"❌ Échec insertion des produits : {e}")
+            print(f"❌ Échec insertion produits : {e}")
+    else:
+        print("⚠️ Aucun produit inséré.")
+
+def reset_and_populate_crm():
+    print("\n📦 [CRM] Réinitialisation de la table Customer...")
+    inspector = db.inspect(db.engine)
+    if 'customer' not in inspector.get_table_names():
+        print("❌ Table 'customer' non trouvée. Vérifiez vos migrations ou vos modèles.")
+        return
+
+    db.session.execute(text("DELETE FROM customer;"))
+    db.session.commit()
+
+    print("🔎 Téléchargement des clients depuis l'API mock CRM...")
+    try:
+        response = requests.get(f"{Config.MOCK_API_URL}/customers", timeout=10)
+        response.raise_for_status()
+        customers_mock = response.json()
+    except Exception as e:
+        print(f"❌ Échec récupération API mock CRM : {e}")
+        return
+
+    clients = []
+    for c in customers_mock:
+        try:
+            clients.append(Customer(
+                id=int(c["id"]),
+                name=c.get("name", ""),
+                first_name=c.get("firstName", ""),
+                last_name=c.get("lastName", ""),
+                city=c.get("address", {}).get("city", ""),
+                postal_code=c.get("address", {}).get("postalCode", "")
+            ))
+        except Exception as e:
+            print(f"⚠️ Client ignoré : {e}")
+
+    if clients:
+        try:
+            db.session.add_all(clients)
+            db.session.commit()
+            print(f"✅ {len(clients)} clients insérés avec succès.")
+        except Exception as e:
+            print(f"❌ Échec insertion clients : {e}")
+    else:
+        print("⚠️ Aucun client inséré.")
+
+def reset_and_populate_all():
+    with app.app_context():
+        print("\n🚀 Initialisation complète de la base de données...")
+        db.create_all()
+        reset_and_populate_erp()
+        reset_and_populate_crm()
+        print("\n🎉 Base de données initialisée avec succès.")
 
 if __name__ == "__main__":
-    # Assure l'accès au module 'app' depuis scripts/
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-    reset_and_populate()
-
+    reset_and_populate_all()

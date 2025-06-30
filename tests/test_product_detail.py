@@ -1,33 +1,40 @@
 from app import db
-from app.models import Product
+import pytest
 
-def test_product_detail(client):
-    with client.application.app_context():
-        product = Product(name="Café Test", description="Description test", price=15.0, model_url="url_test")
-        db.session.add(product)
-        db.session.commit()
-        product_id = product.id
+class MockResponse:
+    def __init__(self, json_data, status_code=200):
+        self._json_data = json_data
+        self.status_code = status_code
 
-    response = client.get(f"/api/products/{product_id}")
+    def json(self):
+        return self._json_data
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            raise Exception(f"HTTP {self.status_code}")
+
+def test_product_detail(client, mocker):
+    mock_data = {
+        "id": "1",
+        "name": "Café Test",
+        "details": {"description": "Desc Test", "price": "15.0"},
+        "stock": 50,
+        "createdAt": "2024-06-01"
+    }
+    mocker.patch(
+        "app.resources.product_detail.requests.get",
+        return_value=MockResponse(json_data=mock_data)
+    )
+    response = client.get("/api/products/1")
     assert response.status_code == 200
-    assert response.get_json()["name"] == "Café Test"
+    data = response.get_json()
+    assert data["name"] == "Café Test"
+    assert data["price"] == 15.0
 
-def test_product_detail_not_found(client):
+def test_product_detail_not_found(client, mocker):
+    mocker.patch(
+        "app.resources.product_detail.requests.get",
+        return_value=MockResponse(json_data={}, status_code=404)
+    )
     response = client.get("/api/products/9999")
     assert response.status_code == 404
-
-def test_product_detail_found(client):
-    from app.models import Product
-    with client.application.app_context():
-        product = Product(name="Produit Détail", description="D", price=1.0, model_url="url")
-        db.session.add(product)
-        db.session.commit()
-        pid = product.id
-
-    res = client.get(f"/api/products/{pid}")
-    assert res.status_code == 200
-
-def test_product_detail_not_found(client):
-    res = client.get("/api/products/999999")
-    assert res.status_code == 404
-

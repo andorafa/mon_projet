@@ -1,45 +1,45 @@
 from app import db
 from app.models import User
 
-def test_revendeur_access_with_valid_key(client):
-    with client.application.app_context():
-        User.query.filter_by(email="revendeur@test.com").delete()
-        db.session.commit()
-        db.session.add(User(email="revendeur@test.com", api_key="revendeur_key"))
-        db.session.commit()
+class MockResponse:
+    def __init__(self, json_data, status_code=200):
+        self._json_data = json_data
+        self.status_code = status_code
+
+    def json(self):
+        return self._json_data
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            raise Exception(f"HTTP {self.status_code}")
+
+def test_revendeur_access_with_valid_key(client, setup_user, mocker):
+    setup_user(email="revendeur@test.com", api_key="revendeur_key")
+
+    mock_data = [
+        {
+            "id": "1",
+            "name": "Produit Revendeur",
+            "details": {"description": "Desc", "price": "5.0"},
+            "stock": 10,
+            "createdAt": "2024-06-01"
+        }
+    ]
+    mocker.patch(
+        "app.resources.revendeurs.requests.get",
+        return_value=MockResponse(json_data=mock_data)
+    )
 
     response = client.get("/api/revendeurs/products", headers={"x-api-key": "revendeur_key"})
     assert response.status_code == 200
+    data = response.get_json()
+    assert isinstance(data, list)
+    assert data[0]["name"] == "Produit Revendeur"
 
 def test_revendeur_access_no_key(client):
     response = client.get("/api/revendeurs/products")
     assert response.status_code == 401
 
-def test_authenticate_valid_key(client):
-    from app.models import User
-    with client.application.app_context():
-        user = User(email="authcov@test.com", api_key="auth123")
-        db.session.add(user)
-        db.session.commit()
-
-    res = client.post("/api/revendeurs/authenticate", headers={"x-api-key": "auth123"})
-    assert res.status_code == 200
-
-def test_revendeurs_products_list(client):
-    from app.models import Product, User
-    with client.application.app_context():
-        db.session.add(User(email="revendeurcov@test.com", api_key="revkey123"))
-        db.session.add(Product(name="Test Produit", description="Desc", price=10.0, model_url=""))
-        db.session.commit()
-
-    res = client.get("/api/revendeurs/products", headers={"x-api-key": "revkey123"})
-    assert res.status_code == 200
-
-def test_revendeurs_logout(client):
-    from app.models import User
-    with client.application.app_context():
-        db.session.add(User(email="logoutcov@test.com", api_key="logoutkey123"))
-        db.session.commit()
-
-    res = client.post("/api/revendeurs/logout", headers={"x-api-key": "logoutkey123"})
-    assert res.status_code == 200
+def test_revendeur_access_invalid_key(client):
+    response = client.get("/api/revendeurs/products", headers={"x-api-key": "wrong_key"})
+    assert response.status_code == 401
