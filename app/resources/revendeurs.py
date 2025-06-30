@@ -13,8 +13,8 @@ product_model = ns.model("Product", {
     "description": fields.String,
     "price": fields.Float,
     "model_url": fields.String,
-    "created_at": fields.String,     # ➕ ajouté
-    "stock": fields.Integer,         # ➕ ajouté
+    "created_at": fields.String,
+    "stock": fields.Integer,
 })
 
 @ns.route("/products")
@@ -43,8 +43,8 @@ class RevendeursAPI(Resource):
                     "description": p.get("details", {}).get("description", ""),
                     "price": float(price_str),
                     "model_url": "",
-                    "created_at": p.get("createdAt", ""),  # ➕ récupéré
-                    "stock": int(p.get("stock", 0)) if isinstance(p.get("stock", 0), int) else 0,  # ➕ récupéré
+                    "created_at": p.get("createdAt", ""),
+                    "stock": int(p.get("stock", 0)) if isinstance(p.get("stock", 0), int) else 0,
                 })
             return cleaned
 
@@ -55,3 +55,29 @@ class RevendeursAPI(Resource):
                 return products
             else:
                 abort(503, "Aucune donnée disponible : API mock hors ligne et base locale vide.")
+
+@ns.route("/authenticate")
+class RevendeurAuthenticate(Resource):
+    @ns.doc(security="API Key")
+    def post(self):
+        api_key = request.headers.get("x-api-key")
+        if not api_key:
+            abort(400, description="Clé API manquante.")
+        user = User.query.filter_by(api_key=api_key).first()
+        if not user:
+            abort(401, description="Clé API invalide.")
+        return {"message": "Authentification réussie"}, 200
+
+@ns.route("/logout")
+class RevendeurLogout(Resource):
+    @ns.doc(security="API Key")
+    def post(self):
+        api_key = request.headers.get("x-api-key")
+        if not api_key:
+            abort(400, description="Clé API manquante.")
+        user = User.query.filter_by(api_key=api_key).first()
+        if not user:
+            abort(401, description="Clé API invalide.")
+        db.session.delete(user)
+        db.session.commit()
+        return {"message": "Déconnexion réussie"}, 200

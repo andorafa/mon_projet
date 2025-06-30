@@ -19,6 +19,12 @@ class ProductDetailAPI(Resource):
     @ns.marshal_with(product_model)
     @ns.response(404, "Produit introuvable")
     def get(self, product_id):
+        # 🔎 Priorité à la BDD locale
+        product = db.session.get(Product, product_id)
+        if product:
+            return product
+        
+        # 📡 Sinon, fallback sur l'API mock
         try:
             url = f"{Config.MOCK_API_URL}/products/{product_id}"
             response = requests.get(url, timeout=5)
@@ -34,9 +40,5 @@ class ProductDetailAPI(Resource):
                 "model_url": "",
             }
         except requests.RequestException as e:
-            print(f"⚠️ API mock indisponible : {e}, fallback sur la BDD...")
-            product = db.session.get(Product, product_id)
-            if product:
-                return product
-            else:
-                ns.abort(404, f"Produit {product_id} introuvable dans la BDD locale.")
+            print(f"⚠️ API mock indisponible : {e}")
+            ns.abort(503, f"Service indisponible pour récupérer le produit {product_id}.")

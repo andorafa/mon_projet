@@ -1,4 +1,5 @@
 from app import db
+from app.models import Product
 import pytest
 
 class MockResponse:
@@ -14,8 +15,15 @@ class MockResponse:
             raise Exception(f"HTTP {self.status_code}")
 
 def test_product_detail(client, mocker):
+    # Nettoyer la BDD locale avant le test
+    with client.application.app_context():
+        product = db.session.get(Product, 99999)
+        if product:
+            db.session.delete(product)
+            db.session.commit()
+
     mock_data = {
-        "id": "1",
+        "id": "99999",
         "name": "Café Test",
         "details": {"description": "Desc Test", "price": "15.0"},
         "stock": 50,
@@ -25,7 +33,7 @@ def test_product_detail(client, mocker):
         "app.resources.product_detail.requests.get",
         return_value=MockResponse(json_data=mock_data)
     )
-    response = client.get("/api/products/1")
+    response = client.get("/api/products/99999")
     assert response.status_code == 200
     data = response.get_json()
     assert data["name"] == "Café Test"

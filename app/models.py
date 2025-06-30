@@ -10,7 +10,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
-        return f"<User {self.email}>"
+        return f"<User {self.first_name} {self.last_name} ({self.email})>"
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
