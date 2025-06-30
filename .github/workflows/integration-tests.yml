@@ -5,10 +5,12 @@ on:
     branches:
       - main
       - creation-apirest
+      - sauvegarde-reset-avant-synchro-back
   pull_request:
     branches:
       - main
       - creation-apirest
+      - sauvegarde-reset-avant-synchro-back
 
 jobs:
   integration-tests:
