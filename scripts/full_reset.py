@@ -17,7 +17,7 @@ def reset_and_populate_erp():
     print("\n📦 [ERP] Réinitialisation de la table Product...")
     inspector = db.inspect(db.engine)
     if 'product' not in inspector.get_table_names():
-        print("❌ Table 'product' non trouvée. Vérifiez vos migrations ou vos modèles.")
+        print("❌ Table 'product' non trouvée. Vérifier vos migrations ou vos modèles.")
         return
 
     db.session.execute(text("DELETE FROM product;"))
@@ -54,6 +54,33 @@ def reset_and_populate_erp():
             print(f"❌ Échec insertion produits : {e}")
     else:
         print("⚠️ Aucun produit inséré.")
+
+def update_product_model_urls():
+    print("\n🔗 Mise à jour des model_url pour les produits 5 et 6...")
+    p1 = Product.query.get(5)
+    p2 = Product.query.get(6)
+
+    update = False
+
+    if p1:
+        p1.model_url = "https://drive.google.com/uc?export=download&id=1Oq_vVepdhZqbhX2Gm7nVcQqttLrlwZWQ"
+        print("✅ model_url mis à jour pour le produit 5.")
+        update = True
+    else:
+        print("⚠️ Produit 5 introuvable en base.")
+
+    if p2:
+        p2.model_url = "https://drive.google.com/uc?export=download&id=1PsD-QhE0z1R-v4mcY8-W0CFw746oLUXl"
+        print("✅ model_url mis à jour pour le produit 6.")
+        update = True
+    else:
+        print("⚠️ Produit 6 introuvable en base.")
+
+    if update:
+        db.session.commit()
+        print("✅ model_url des produits mis à jour avec succès.")
+    else:
+        print("⚠️ Aucun produit mis à jour.")
 
 def reset_and_populate_crm():
     print("\n📦 [CRM] Réinitialisation des tables Customer + Orders...")
@@ -107,6 +134,7 @@ def reset_and_populate_all():
         print("\n🚀 Initialisation complète de la base de données...")
         db.create_all()
         reset_and_populate_erp()
+        update_product_model_urls()  # 🔥 Ajout ici : mise à jour des model_url après les produits
         reset_and_populate_crm()
         print("\n🎉 Base de données initialisée avec succès.")
 
