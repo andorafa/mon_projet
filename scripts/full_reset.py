@@ -56,12 +56,16 @@ def reset_and_populate_erp():
         print("⚠️ Aucun produit inséré.")
 
 def reset_and_populate_crm():
-    print("\n📦 [CRM] Réinitialisation de la table Customer...")
+    print("\n📦 [CRM] Réinitialisation des tables Customer + Orders...")
+
     inspector = db.inspect(db.engine)
     if 'customer' not in inspector.get_table_names():
         print("❌ Table 'customer' non trouvée. Vérifiez vos migrations ou vos modèles.")
         return
 
+    # ⚠️ Supprimer dans l'ordre pour éviter les violations de contraintes
+    db.session.execute(text("DELETE FROM order_product;"))
+    db.session.execute(text("DELETE FROM \"order\";"))  # "order" entre guillemets car mot réservé SQL
     db.session.execute(text("DELETE FROM customer;"))
     db.session.commit()
 
