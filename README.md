@@ -13,7 +13,7 @@ Usage commercial, modification ou redistribution, réutilisation du code interdi
 Ce projet (mon_projet) suit une structure multi-branche :
 
 - 🧪 Le **code du backend** est dans la branche [`creation-apirest`](https://github.com/andorafa/mon_projet/tree/creation-apirest)
-- 📱 Le code de l'**application mobile Flutter** est dans la branche [`mobile-app`](https://github.com/andorafa/mon_projet/tree/mobile-app)
+- 📱 Le code de l'**application mobile Flutter** est dans la branche [`mobile-app`](https://github.com/andorafa/mon_projet/tree/mobile-app-secours)
 
 ---
 
@@ -24,7 +24,7 @@ Le code du backend a été temporairement fusionné dans la branche `main` **uni
 ➡️ En effet, **SonarCloud gratuit n’analyse que la branche `main`**, d’où cette intégration technique.
 
 > 🚨 **Important** : pour le moment aucun développement actif ne se fait dans `main`.  
-> Pour le moment, toutes les fonctionnalités backend et mobile vont continuer (si besoin) d’évoluer dans `creation-apirest` et `mobile-app` .
+> Pour le moment, toutes les fonctionnalités backend et mobile vont continuer (si besoin) d’évoluer dans `creation-apirest` et `mobile-app-secours` .
 
 ---
 
