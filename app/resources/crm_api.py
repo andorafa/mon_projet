@@ -1,47 +1,61 @@
+import requests
 from flask_restx import Namespace, Resource, fields
-from app.mock_data import mock_crm_data
+from app.config import Config
 
-ns = Namespace("crm", description="API CRM - Clients, Commandes")
+ns = Namespace("crm", description="API CRM - Clients et Commandes")
 
-# @ns.route("/customers")
-# class CustomersAPI(Resource):
-#     def get(self):
-#         return mock_crm_data.get_all_customers()
-
-client_model = ns.model("Client", {
+customer_model = ns.model("Customer", {
     "id": fields.String,
     "name": fields.String,
+    "firstName": fields.String,
+    "lastName": fields.String,
+    "city": fields.String(attribute="address.city"),
+    "postalCode": fields.String(attribute="address.postalCode"),
 })
-
-order_model = ns.model("Order", {
-    "id": fields.String,
-    "customerId": fields.String,
-    "date": fields.String,
-})
-
-product_model = ns.model("Product", {
-    "id": fields.String,
-    "name": fields.String,
-    "price": fields.Float,
-})
-
 
 @ns.route("/customers")
 class CustomersAPI(Resource):
-    @ns.marshal_list_with(client_model)
+    @ns.marshal_list_with(customer_model)
     def get(self):
-        return mock_crm_data.customers
-
+        try:
+            url = f"{Config.MOCK_API_URL}/customers"
+            response = requests.get(url, timeout=5)
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as e:
+            print(f"⚠️ API mock CRM indisponible : {e}")
+            ns.abort(503, "Données CRM indisponibles : API mock hors ligne.")
 
 @ns.route("/customers/<string:customer_id>/orders")
-class OrdersAPI(Resource):
-    @ns.marshal_list_with(order_model)
+class CustomerOrdersAPI(Resource):
     def get(self, customer_id):
-        return mock_crm_data.orders_by_customer.get(customer_id, [])
-
+        try:
+            url = f"{Config.MOCK_API_URL}/customers/{customer_id}"
+            response = requests.get(url, timeout=5)
+            if response.status_code == 404:
+                ns.abort(404, f"Client {customer_id} introuvable sur l'API mock")
+            response.raise_for_status()
+            customer = response.json()
+            return customer.get("orders", [])
+        except requests.RequestException as e:
+            print(f"⚠️ API mock CRM indisponible : {e}")
+            ns.abort(503, "Données CRM indisponibles : API mock hors ligne.")
 
 @ns.route("/customers/<string:customer_id>/orders/<string:order_id>/products")
-class ProductsAPI(Resource):
-    @ns.marshal_list_with(product_model)
+class OrderProductsAPI(Resource):
     def get(self, customer_id, order_id):
-        return mock_crm_data.products_by_order.get(order_id, [])
+        try:
+            url = f"{Config.MOCK_API_URL}/customers/{customer_id}"
+            response = requests.get(url, timeout=5)
+            if response.status_code == 404:
+                ns.abort(404, f"Client {customer_id} introuvable sur l'API mock")
+            response.raise_for_status()
+            customer = response.json()
+            orders = customer.get("orders", [])
+            for order in orders:
+                if order.get("id") == order_id:
+                    return order.get("products", [])
+            ns.abort(404, f"Commande {order_id} non trouvée pour le client {customer_id}")
+        except requests.RequestException as e:
+            print(f"⚠️ API mock CRM indisponible : {e}")
+            ns.abort(503, "Données CRM indisponibles : API mock hors ligne.")
