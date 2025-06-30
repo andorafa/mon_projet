@@ -29,32 +29,37 @@ class RevendeursAPI(Resource):
         if not user:
             abort(401, description="Clé API invalide.")
 
-        try:
-            url = f"{Config.MOCK_API_URL}/products"
-            response = requests.get(url, timeout=5)
-            response.raise_for_status()
-            products_mock = response.json()
-            cleaned = []
-            for p in products_mock:
-                price_str = str(p.get("details", {}).get("price", "0")).replace(',', '.')
-                cleaned.append({
-                    "id": int(p["id"]),
-                    "name": p["name"],
-                    "description": p.get("details", {}).get("description", ""),
-                    "price": float(price_str),
-                    "model_url": "",
-                    "created_at": p.get("createdAt", ""),
-                    "stock": int(p.get("stock", 0)) if isinstance(p.get("stock", 0), int) else 0,
-                })
-            return cleaned
+        if Config.USE_MOCK_PRODUCTS:
+            print("🟡 USE_MOCK_PRODUCTS=true ➔ récupération depuis le mock ERP.")
+            try:
+                url = f"{Config.MOCK_API_URL}/products"
+                response = requests.get(url, timeout=5)
+                response.raise_for_status()
+                products_mock = response.json()
 
-        except requests.RequestException as e:
-            print(f"⚠️ API mock indisponible : {e}, fallback sur la BDD...")
+                cleaned = []
+                for p in products_mock:
+                    price_str = str(p.get("details", {}).get("price", "0")).replace(',', '.')
+                    cleaned.append({
+                        "id": int(p["id"]),
+                        "name": p["name"],
+                        "description": p.get("details", {}).get("description", ""),
+                        "price": float(price_str),
+                        "model_url": "",  # Le mock ne fournit pas ce champ
+                        "created_at": p.get("createdAt", ""),
+                        "stock": int(p.get("stock", 0)) if isinstance(p.get("stock", 0), int) else 0,
+                    })
+                return cleaned
+            except requests.RequestException as e:
+                print(f"⚠️ API mock indisponible : {e}")
+                abort(503, "Données ERP indisponibles : API mock hors ligne.")
+        else:
+            print("🟢 USE_MOCK_PRODUCTS=false ➔ récupération depuis la base locale.")
             products = Product.query.all()
             if products:
                 return products
             else:
-                abort(503, "Aucune donnée disponible : API mock hors ligne et base locale vide.")
+                abort(503, "Aucun produit disponible dans la base locale.")
 
 @ns.route("/authenticate")
 class RevendeurAuthenticate(Resource):
