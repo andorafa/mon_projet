@@ -36,13 +36,15 @@ def reset_and_populate_erp():
             price_str = str(p.get("price", p.get("details", {}).get("price", "0"))).replace(',', '.')
 
             # 🔎 Debug valeur brute du stock
-            print(f"📦 DEBUG produit: {p['name']} | stock brut={p.get('stock')}")
+            stock_raw = p.get("stock")
+            print(f"📦 DEBUG produit: {p['name']} | stock brut={stock_raw}")
 
             try:
-                stock_val = int(p.get("stock", 0))
-            except (ValueError, TypeError) as e:
-                print(f"⚠️ Stock invalide pour le produit: {p.get('name')} | valeur reçue : {p.get('stock')} | erreur : {e}")
-                continue  # ignorer ce produit invalide
+                stock_val = int(stock_raw)
+            except (ValueError, TypeError):
+                # 🔥 Consigne métier : stock invalide => stock=0, produit inséré quand même
+                stock_val = 0
+                print(f"⚠️ Stock invalide pour {p.get('name')} | valeur reçue : {stock_raw} | défini à 0 par défaut.")
 
             produits.append(Product(
                 name=p["name"],
