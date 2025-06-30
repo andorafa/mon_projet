@@ -1,5 +1,3 @@
-# scripts/full_reset.py
-
 import sys
 import os
 
@@ -17,7 +15,7 @@ def reset_and_populate_erp():
     print("\n📦 [ERP] Réinitialisation de la table Product...")
     inspector = db.inspect(db.engine)
     if 'product' not in inspector.get_table_names():
-        print("❌ Table 'product' non trouvée. Vérifier vos migrations ou vos modèles.")
+        print("❌ Table 'product' non trouvée. Vérifiez vos migrations ou vos modèles.")
         return
 
     db.session.execute(text("DELETE FROM product;"))
@@ -35,11 +33,22 @@ def reset_and_populate_erp():
     produits = []
     for p in products_mock:
         try:
-            price_str = str(p.get("details", {}).get("price", "0")).replace(',', '.')
+            price_str = str(p.get("price", p.get("details", {}).get("price", "0"))).replace(',', '.')
+
+            # 🔎 Debug valeur brute du stock
+            print(f"📦 DEBUG produit: {p['name']} | stock brut={p.get('stock')}")
+
+            try:
+                stock_val = int(p.get("stock", 0))
+            except (ValueError, TypeError) as e:
+                print(f"⚠️ Stock invalide pour le produit: {p.get('name')} | valeur reçue : {p.get('stock')} | erreur : {e}")
+                continue  # ignorer ce produit invalide
+
             produits.append(Product(
                 name=p["name"],
-                description=p.get("details", {}).get("description", ""),
+                description=p.get("description", p.get("details", {}).get("description", "")),
                 price=float(price_str),
+                stock=stock_val,
                 model_url=""
             ))
         except Exception as e:
@@ -56,25 +65,26 @@ def reset_and_populate_erp():
         print("⚠️ Aucun produit inséré.")
 
 def update_product_model_urls():
-    print("\n🔗 Mise à jour des model_url pour les produits 5 et 6...")
-    p1 = Product.query.get(5)
-    p2 = Product.query.get(6)
+    print("\n🔗 Mise à jour des model_url pour des produits spécifiques...")
 
     update = False
 
+    p1 = Product.query.filter_by(name="Lonnie Schuppe DDS").first()
+    p2 = Product.query.filter_by(name="Clint Boyer").first()
+
     if p1:
         p1.model_url = "https://drive.google.com/uc?export=download&id=1Oq_vVepdhZqbhX2Gm7nVcQqttLrlwZWQ"
-        print("✅ model_url mis à jour pour le produit 5.")
+        print(f"✅ model_url mis à jour pour le produit : {p1.name}.")
         update = True
     else:
-        print("⚠️ Produit 5 introuvable en base.")
+        print("⚠️ Produit 'Lonnie Schuppe DDS' introuvable en base.")
 
     if p2:
         p2.model_url = "https://drive.google.com/uc?export=download&id=1PsD-QhE0z1R-v4mcY8-W0CFw746oLUXl"
-        print("✅ model_url mis à jour pour le produit 6.")
+        print(f"✅ model_url mis à jour pour le produit : {p2.name}.")
         update = True
     else:
-        print("⚠️ Produit 6 introuvable en base.")
+        print("⚠️ Produit 'Clint Boyer' introuvable en base.")
 
     if update:
         db.session.commit()
@@ -134,7 +144,7 @@ def reset_and_populate_all():
         print("\n🚀 Initialisation complète de la base de données...")
         db.create_all()
         reset_and_populate_erp()
-        update_product_model_urls()  # 🔥 Ajout ici : mise à jour des model_url après les produits
+        update_product_model_urls()
         reset_and_populate_crm()
         print("\n🎉 Base de données initialisée avec succès.")
 

@@ -6,11 +6,13 @@ from app.config import Config
 
 ns = Namespace("products", description="Détail produit")
 
+# 🔥 Modèle mis à jour pour inclure le champ stock
 product_model = ns.model("Product", {
     "id": fields.Integer,
     "name": fields.String,
     "description": fields.String,
     "price": fields.Float,
+    "stock": fields.Integer,            # 🔥 Ajout du champ stock
     "model_url": fields.String,
 })
 
@@ -23,7 +25,7 @@ class ProductDetailAPI(Resource):
         product = db.session.get(Product, product_id)
         if product:
             return product
-        
+
         # 📡 Sinon, fallback sur l'API mock
         try:
             url = f"{Config.MOCK_API_URL}/products/{product_id}"
@@ -37,6 +39,7 @@ class ProductDetailAPI(Resource):
                 "name": p["name"],
                 "description": p.get("details", {}).get("description", ""),
                 "price": float(p.get("details", {}).get("price", 0)),
+                "stock": int(p.get("details", {}).get("stock", 0)),  # 🔥 Ajout pour fallback
                 "model_url": "",
             }
         except requests.RequestException as e:
