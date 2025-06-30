@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       API_WEBSHOP_KEY: ${{ secrets.API_WEBSHOP_KEY }}
+      USE_MOCK_PRODUCTS: true   # Ajout pour forcer le mock pendant les tests
 
     steps:
       - name: 📥 Checkout du code

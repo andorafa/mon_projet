@@ -18,6 +18,7 @@ jobs:
     name: Tests integration API complète
     env:
       API_WEBSHOP_KEY: ${{ secrets.API_WEBSHOP_KEY }}
+      USE_MOCK_PRODUCTS: true   # Ajout pour forcer le mock pendant les tests
 
     steps:
       - name: 🧾 Récupérer le code
