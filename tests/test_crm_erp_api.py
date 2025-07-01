@@ -2,6 +2,8 @@ import pytest
 import requests
 from app import db
 from app.models import Product
+from datetime import datetime
+
 
 class MockResponse:
     def __init__(self, json_data, status_code=200):
@@ -67,7 +69,7 @@ def test_get_erp_products(client, mocker):
         "id": "1", "name": "Café Moka",
         "details": {"description": "Doux", "price": "5.5"},
         "stock": 100,
-        "createdAt": "2024-06-01"
+        "createdAt": datetime.strptime("2024-01-01", "%Y-%m-%d")
     }]
     mocker.patch("app.resources.erp_api.requests.get", return_value=MockResponse(mock_data))
     response = client.get("/api/erp/products")
@@ -79,7 +81,7 @@ def test_get_erp_product_detail_valid(client, mocker):
     mock_data = {
         "id": "1", "name": "Café Moka",
         "details": {"description": "Doux", "price": "5.5"},
-        "stock": 100, "createdAt": "2024-06-01"
+        "stock": 100, "createdAt": datetime.strptime("2024-01-01", "%Y-%m-%d")
     }
     mocker.patch("app.resources.erp_api.requests.get", return_value=MockResponse(mock_data))
     response = client.get("/api/erp/products/1")
@@ -105,7 +107,8 @@ def test_erp_api_unavailable_with_fallback(client, mocker):
         description="local",
         price=10.0,
         stock=5,
-        created_at="2024-01-01"
+        createdAt = datetime.strptime("2024-01-01", "%Y-%m-%d")
+
     )
     db.session.add(product)
     db.session.commit()

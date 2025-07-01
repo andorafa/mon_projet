@@ -1,6 +1,8 @@
 from app import db
 from app.models import Product
 import pytest
+from datetime import datetime
+
 
 class MockResponse:
     def __init__(self, json_data, status_code=200):
@@ -27,7 +29,7 @@ def test_product_detail(client, mocker):
         "name": "Café Test",
         "details": {"description": "Desc Test", "price": "15.0"},
         "stock": 50,
-        "createdAt": "2024-06-01"
+        "createdAt": datetime.strptime("2024-01-01", "%Y-%m-%d")
     }
     mocker.patch(
         "app.resources.product_detail.requests.get",

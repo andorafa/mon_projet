@@ -1,6 +1,8 @@
 import pytest
 from app import db
 from app.models import User, Product
+from datetime import datetime
+
 
 class MockResponse:
     def __init__(self, json_data, status_code=200):
@@ -22,7 +24,7 @@ def test_revendeurs_get_direct_valid(client, setup_user, mocker):
             "name": "Produit Test",
             "details": {"description": "Desc", "price": "1.0"},
             "stock": 20,
-            "createdAt": "2024-06-01"
+            "createdAt": datetime.strptime("2024-01-01", "%Y-%m-%d")
         }
     ]
     mocker.patch(

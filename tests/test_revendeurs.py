@@ -1,5 +1,6 @@
 from app import db
 from app.models import User
+from datetime import datetime
 
 class MockResponse:
     def __init__(self, json_data, status_code=200):
@@ -22,7 +23,7 @@ def test_revendeur_access_with_valid_key(client, setup_user, mocker):
             "name": "Produit Revendeur",
             "details": {"description": "Desc", "price": "5.0"},
             "stock": 10,
-            "createdAt": "2024-06-01"
+            "createdAt": datetime.strptime("2024-01-01", "%Y-%m-%d")
         }
     ]
     mocker.patch(
