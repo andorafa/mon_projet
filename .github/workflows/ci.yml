@@ -147,7 +147,6 @@ jobs:
   bandit:
     name: 🔒 Analyse de sécurité Bandit
     runs-on: ubuntu-latest
-    needs: sonarcloud
     env:
       API_WEBSHOP_KEY: ${{ secrets.API_WEBSHOP_KEY }}
 
@@ -169,7 +168,7 @@ jobs:
   deploy:
     name: 🚀 Déploiement Render
     runs-on: ubuntu-latest
-    needs: bandit
+    needs: [tests, bandit]
     if: (github.ref == 'refs/heads/creation-apirest' || github.ref == 'refs/heads/sauvegarde-reset-avant-synchro-back') && github.event_name == 'push'
 
     steps:
@@ -209,6 +208,3 @@ jobs:
         run: |
           export PYTHONPATH=$(pwd)
           python scripts/import_crm_orders.py
-
-
-#testci
