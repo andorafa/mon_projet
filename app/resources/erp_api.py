@@ -75,3 +75,6 @@ class ProductDetailAPI(Resource):
                 return product
             else:
                 ns.abort(404, f"Produit {product_id} introuvable dans la BDD locale.")
+
+
+#test : vérifier upload avec nouveau token
