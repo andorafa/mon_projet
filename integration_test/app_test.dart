@@ -8,19 +8,26 @@ void main() {
 
   const useMockScanner = bool.fromEnvironment('USE_MOCK_SCANNER', defaultValue: false);
 
-  testWidgets('Flow complet: inscription + navigation scanner', (WidgetTester tester) async {
+  testWidgets('Flow complet: accueil -> inscription -> navigation scanner', (WidgetTester tester) async {
     app.main();
     await tester.pumpAndSettle();
 
-    // Vérifie l’accueil
+    // 🔎 Vérifie qu’on est bien sur la page d’accueil
+    expect(find.byType(Image), findsOneWidget);
+    expect(find.text('Commencer'), findsOneWidget);
+
+    // 🟢 Clique sur "Commencer" pour aller à la page d’authentification
+    await tester.tap(find.text('Commencer'));
+    await tester.pumpAndSettle();
+
+    // 🔎 Vérifie la présence du titre de la page d’authentification
     expect(find.text('Inscription / Connexion'), findsOneWidget);
-    expect(find.text("S'inscrire et recevoir le QR Code"), findsOneWidget);
 
     // Remplit le formulaire
     await tester.enterText(find.bySemanticsLabel('Prénom'), 'Test');
     await tester.enterText(find.bySemanticsLabel('Nom'), 'User');
     await tester.enterText(
-      find.bySemanticsLabel('Email'),
+      find.byKey(const Key('emailField')),
       'testuser+${DateTime.now().millisecondsSinceEpoch}@example.com',
     );
 
@@ -35,20 +42,20 @@ void main() {
     await tester.pumpAndSettle();
 
     if (useMockScanner) {
-      // ✅ En mode mock : le scanner n'est pas affiché
+      // ✅ En mode mock : pas de scanner
       expect(find.text("Scanner QR Code"), findsNothing);
       expect(find.textContaining("Clé mockée"), findsNothing);
     } else {
-      // ✅ En mode réel : on vérifie la page scanner
+      // ✅ En mode réel : on doit voir le scanner
       expect(find.text("Scanner QR Code"), findsOneWidget);
       expect(find.byKey(const Key('testBackButton')), findsOneWidget);
 
-      // Retour arrière
+      // Retour arrière depuis le scanner
       await tester.tap(find.byKey(const Key('testBackButton')));
       await tester.pumpAndSettle();
     }
 
-    // Vérifie qu'on est de retour sur l’accueil
+    // Vérifie qu’on est revenu sur l’écran d’authentification
     expect(find.text("S'inscrire et recevoir le QR Code"), findsOneWidget);
   });
 }
