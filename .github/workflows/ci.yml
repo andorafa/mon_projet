@@ -209,3 +209,6 @@ jobs:
         run: |
           export PYTHONPATH=$(pwd)
           python scripts/import_crm_orders.py
+
+
+#testci
