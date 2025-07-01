@@ -1,8 +1,9 @@
 # scripts/import_crm_orders.py
 
-from datetime import date as dt_date, datetime
+from datetime import date as dt_date, datetime, timezone
 import sys
 import os
+import time  # ✅ Pour ajouter un délai
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -68,13 +69,15 @@ def import_crm_orders():
                 print(f"❌ Impossible de récupérer le client {cust.id} : {e}")
                 continue
 
+            time.sleep(0.2)  # ✅ Ajout d’un délai pour éviter le rate limit
+
             orders = customer_data.get("orders", [])
             for o in orders:
                 try:
                     order = Order(
                         id=o["id"],
                         customer_id=cust.id,
-                        date=datetime.now(tz=datetime.UTC),
+                        date=datetime.now(tz=timezone.utc),  # ✅ Correction ici
                         status="imported",
                         total_amount=0.0  # peut être recalculé si besoin
                     )
