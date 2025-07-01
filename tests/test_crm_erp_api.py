@@ -69,7 +69,7 @@ def test_get_erp_products(client, mocker):
         "id": "1", "name": "Café Moka",
         "details": {"description": "Doux", "price": "5.5"},
         "stock": 100,
-        "createdAt": "2024-01-01"  # camelCase dans le JSON mock
+        "createdAt": datetime.strptime("2024-01-01", "%Y-%m-%d")
     }]
     mocker.patch("app.resources.erp_api.requests.get", return_value=MockResponse(mock_data))
     response = client.get("/api/erp/products")
@@ -81,8 +81,7 @@ def test_get_erp_product_detail_valid(client, mocker):
     mock_data = {
         "id": "1", "name": "Café Moka",
         "details": {"description": "Doux", "price": "5.5"},
-        "stock": 100,
-        "createdAt": "2024-01-01"
+        "stock": 100, "createdAt": datetime.strptime("2024-01-01", "%Y-%m-%d")
     }
     mocker.patch("app.resources.erp_api.requests.get", return_value=MockResponse(mock_data))
     response = client.get("/api/erp/products/1")
@@ -94,13 +93,12 @@ def test_get_erp_product_detail_not_found(client, mocker):
     mocker.patch("app.resources.erp_api.requests.get", return_value=MockResponse({}, status_code=404))
     response = client.get("/api/erp/products/999")
     assert response.status_code == 404
-    response_text = response.get_data(as_text=True)
-    assert "Produit 999" in response_text
-    assert "non trouvé" in response_text
+    response_json = response.get_json()
+    assert "Produit 999" in response_json["message"]
+    assert "non trouvé" in response_json["message"]
 
 def test_erp_api_unavailable_with_fallback(client, mocker):
     mocker.patch("app.resources.erp_api.requests.get", side_effect=requests.exceptions.ConnectionError("API down"))
-    # préparation d’un produit dans la BDD locale (⚠️ utiliser created_at pour SQLAlchemy)
     product = Product(
         id=42,
         name="Produit BDD",
@@ -118,9 +116,9 @@ def test_erp_api_unavailable_with_fallback(client, mocker):
 
 def test_erp_api_unavailable_no_fallback(client, mocker):
     mocker.patch("app.resources.erp_api.requests.get", side_effect=requests.exceptions.ConnectionError("API down"))
-    # s’assurer que la BDD est vide
     Product.query.delete()
     db.session.commit()
     response = client.get("/api/erp/products")
     assert response.status_code == 503
-    assert "Aucune donnée disponible" in response.get_data(as_text=True)
+    response_json = response.get_json()
+    assert "Aucune donnée disponible" in response_json["message"]
