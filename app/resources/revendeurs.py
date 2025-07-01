@@ -61,6 +61,49 @@ class RevendeursAPI(Resource):
             else:
                 abort(503, "Aucun produit disponible dans la base locale.")
 
+@ns.route("/products/<int:product_id>")
+class RevendeurProductDetailAPI(Resource):
+    @ns.doc(security="API Key")
+    @ns.marshal_with(product_model)
+    @ns.response(404, "Produit introuvable")
+    def get(self, product_id):
+        api_key = request.headers.get("x-api-key")
+        if not api_key:
+            abort(401, description="Clé API manquante.")
+        user = User.query.filter_by(api_key=api_key).first()
+        if not user:
+            abort(401, description="Clé API invalide.")
+
+        if Config.USE_MOCK_PRODUCTS:
+            print("🟡 USE_MOCK_PRODUCTS=true ➔ récupération détail depuis le mock ERP.")
+            try:
+                url = f"{Config.MOCK_API_URL}/products/{product_id}"
+                response = requests.get(url, timeout=5)
+                if response.status_code == 404:
+                    abort(404, f"Produit {product_id} non trouvé sur l'API mock")
+                response.raise_for_status()
+                p = response.json()
+                price_str = str(p.get("details", {}).get("price", "0")).replace(',', '.')
+                return {
+                    "id": int(p["id"]),
+                    "name": p["name"],
+                    "description": p.get("details", {}).get("description", ""),
+                    "price": float(price_str),
+                    "model_url": "",
+                    "created_at": p.get("createdAt", ""),
+                    "stock": int(p.get("stock", 0)) if isinstance(p.get("stock", 0), int) else 0,
+                }
+            except requests.RequestException as e:
+                print(f"⚠️ API mock indisponible : {e}")
+                abort(503, f"Service indisponible pour récupérer le produit {product_id}.")
+        else:
+            print("🟢 USE_MOCK_PRODUCTS=false ➔ récupération détail depuis la base locale.")
+            product = db.session.get(Product, product_id)
+            if product:
+                return product
+            else:
+                abort(404, f"Produit {product_id} introuvable dans la base locale.")
+
 @ns.route("/authenticate")
 class RevendeurAuthenticate(Resource):
     @ns.doc(security="API Key")

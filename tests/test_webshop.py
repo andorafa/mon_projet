@@ -1,7 +1,5 @@
-from app import db
 from app.config import Config
 from datetime import datetime
-
 
 class MockResponse:
     def __init__(self, json_data, status_code=200):
