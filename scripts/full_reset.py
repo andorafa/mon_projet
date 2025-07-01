@@ -12,14 +12,22 @@ from app.config import Config
 app = create_app()
 
 def reset_and_populate_erp():
-    print("\n📦 [ERP] Réinitialisation de la table Product...")
+    print("\n📦 [ERP] Réinitialisation des tables OrderProduct + Product...")
+
     inspector = db.inspect(db.engine)
     if 'product' not in inspector.get_table_names():
         print("❌ Table 'product' non trouvée. Vérifiez vos migrations ou vos modèles.")
         return
 
+    # ⚠️ Supprimer d'abord OrderProduct pour éviter les violations de contraintes
+    db.session.execute(text("DELETE FROM order_product;"))
+    db.session.commit()
+
+    # Ensuite supprimer les produits
     db.session.execute(text("DELETE FROM product;"))
     db.session.commit()
+
+    print("✅ Tables order_product et product réinitialisées.")
 
     print("🔎 Téléchargement des produits depuis l'API mock ERP...")
     try:
@@ -34,15 +42,12 @@ def reset_and_populate_erp():
     for p in products_mock:
         try:
             price_str = str(p.get("price", p.get("details", {}).get("price", "0"))).replace(',', '.')
-
-            # 🔎 Debug valeur brute du stock
             stock_raw = p.get("stock")
             print(f"📦 DEBUG produit: {p['name']} | stock brut={stock_raw}")
 
             try:
                 stock_val = int(stock_raw)
             except (ValueError, TypeError):
-                # 🔥 Consigne métier : stock invalide => stock=0, produit inséré quand même
                 stock_val = 0
                 print(f"⚠️ Stock invalide pour {p.get('name')} | valeur reçue : {stock_raw} | défini à 0 par défaut.")
 
