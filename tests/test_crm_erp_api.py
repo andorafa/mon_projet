@@ -69,7 +69,7 @@ def test_get_erp_products(client, mocker):
         "id": "1", "name": "Café Moka",
         "details": {"description": "Doux", "price": "5.5"},
         "stock": 100,
-        "createdAt": datetime.strptime("2024-01-01", "%Y-%m-%d")
+        "createdAt": "2024-01-01"  # camelCase dans le JSON mock
     }]
     mocker.patch("app.resources.erp_api.requests.get", return_value=MockResponse(mock_data))
     response = client.get("/api/erp/products")
@@ -81,7 +81,8 @@ def test_get_erp_product_detail_valid(client, mocker):
     mock_data = {
         "id": "1", "name": "Café Moka",
         "details": {"description": "Doux", "price": "5.5"},
-        "stock": 100, "createdAt": datetime.strptime("2024-01-01", "%Y-%m-%d")
+        "stock": 100,
+        "createdAt": "2024-01-01"
     }
     mocker.patch("app.resources.erp_api.requests.get", return_value=MockResponse(mock_data))
     response = client.get("/api/erp/products/1")
@@ -97,18 +98,16 @@ def test_get_erp_product_detail_not_found(client, mocker):
     assert "Produit 999" in response_text
     assert "non trouvé" in response_text
 
-
 def test_erp_api_unavailable_with_fallback(client, mocker):
     mocker.patch("app.resources.erp_api.requests.get", side_effect=requests.exceptions.ConnectionError("API down"))
-    # préparation d’un produit dans la BDD locale sans `color`
+    # préparation d’un produit dans la BDD locale (⚠️ utiliser created_at pour SQLAlchemy)
     product = Product(
         id=42,
         name="Produit BDD",
         description="local",
         price=10.0,
         stock=5,
-        createdAt = datetime.strptime("2024-01-01", "%Y-%m-%d")
-
+        created_at=datetime.strptime("2024-01-01", "%Y-%m-%d")
     )
     db.session.add(product)
     db.session.commit()
@@ -116,7 +115,6 @@ def test_erp_api_unavailable_with_fallback(client, mocker):
     assert response.status_code == 200
     data = response.get_json()
     assert data[0]["name"] == "Produit BDD"
-
 
 def test_erp_api_unavailable_no_fallback(client, mocker):
     mocker.patch("app.resources.erp_api.requests.get", side_effect=requests.exceptions.ConnectionError("API down"))
