@@ -78,3 +78,5 @@ class ProductDetailAPI(Resource):
 
 
 #test : vérifier upload avec nouveau token
+#test1 : vérifier upload avec nouveau token
+
