@@ -12,8 +12,11 @@ Usage commercial, modification ou redistribution, réutilisation du code interdi
 
 Ce projet (mon_projet) suit une structure multi-branche :
 
-- 🧪 Le **code du backend** est dans la branche [`creation-apirest`](https://github.com/andorafa/mon_projet/tree/creation-apirest)
-- 📱 Le code de l'**application mobile Flutter** est dans la branche [`mobile-app`](https://github.com/andorafa/mon_projet/tree/mobile-app-secours)
+- 🧪 Le **code du backend** est dans la branche : 
+           [`creation-apirest`](https://github.com/andorafa/mon_projet/tree/creation-apirest) 
+           ou [`sauvegarde-reset-avant-synchro-back`](https://github.com/andorafa/mon_projet/tree/sauvegarde-reset-avant-synchro-back))
+
+- 📱 Le code de l'**application mobile Flutter** est dans la branche [`mobile-app-secours`](https://github.com/andorafa/mon_projet/tree/mobile-app-secours)
 
 ---
 
