@@ -208,3 +208,11 @@ jobs:
         run: |
           export PYTHONPATH=$(pwd)
           python scripts/import_crm_orders.py
+      
+      
+      - name: ▶️ Créer le mock user pour tests mobiles
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          export PYTHONPATH=$(pwd)
+          python scripts/create_mock_user.py
