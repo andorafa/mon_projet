@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
+import 'pages/welcome_page.dart';
 import 'pages/ar_view_page.dart';
 import 'pages/qr_scanner_page.dart';
 import 'pages/authentication_page.dart';
@@ -23,8 +24,21 @@ class PayeTonKawaApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'PayeTonKawa',
-      theme: ThemeData(primarySwatch: Colors.brown),
-      initialRoute: '/',
+      theme: ThemeData(
+        primarySwatch: Colors.brown,
+        inputDecorationTheme: const InputDecorationTheme(
+          floatingLabelStyle: TextStyle(color: Colors.black), // couleur du label en focus
+          labelStyle: TextStyle(color: Colors.black),         // couleur du label par défaut
+        ),
+      ),
+
+      initialRoute: '/welcome',
+      routes: {
+        '/welcome': (_) => const WelcomePage(),
+        '/auth': (_) => const AuthenticationPage(),
+        '/products': (_) => ProductListPage(httpClient: httpClient),
+        '/scan': (_) => const QRScannerPage(),
+      },
       onGenerateRoute: (settings) {
         if (settings.name == '/ar') {
           final modelUrl = settings.arguments as String?;
@@ -32,20 +46,7 @@ class PayeTonKawaApp extends StatelessWidget {
             builder: (_) => ARViewPage(modelUrl: modelUrl),
           );
         }
-
-        switch (settings.name) {
-          case '/':
-            return MaterialPageRoute(builder: (_) => const AuthenticationPage());
-          case '/products':
-          // Transmission correcte du httpClient mocké ici
-            return MaterialPageRoute(
-              builder: (_) => ProductListPage(httpClient: httpClient),
-            );
-          case '/scan':
-            return MaterialPageRoute(builder: (_) => const QRScannerPage());
-          default:
-            return null;
-        }
+        return null;
       },
     );
   }

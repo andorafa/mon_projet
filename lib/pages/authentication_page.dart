@@ -6,7 +6,6 @@ import 'qr_scanner_page.dart';
 
 final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
-// Booléen global contrôlé via --dart-define pour les tests
 const bool kUseMockScanner =
 bool.fromEnvironment('USE_MOCK_SCANNER', defaultValue: false);
 
@@ -82,7 +81,13 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
       );
       if (!mounted) return;
       if (response.statusCode == 201) {
-        setState(() => message = "Inscription réussie ! Vérifiez votre email pour le QR Code.");
+        setState(() {
+          message = "Inscription réussie ! Vérifiez votre email pour le QR Code.";
+          // Effacer les champs après succès
+          emailController.clear();
+          firstNameController.clear();
+          lastNameController.clear();
+        });
       } else {
         setState(() => message = "Erreur d'inscription : ${response.statusCode}");
       }
@@ -167,7 +172,15 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Inscription / Connexion')),
+      appBar: AppBar(
+        title: const Text('Inscription / Connexion'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushReplacementNamed(context, '/welcome');
+          },
+        ),
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -195,15 +208,33 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
               ],
               TextField(
                 controller: firstNameController,
-                decoration: const InputDecoration(labelText: 'Prénom'),
+                decoration: const InputDecoration(
+                  labelText: 'Prénom',
+                ),
               ),
               TextField(
                 controller: lastNameController,
-                decoration: const InputDecoration(labelText: 'Nom'),
+                decoration: const InputDecoration(
+                  labelText: 'Nom',
+                ),
               ),
               TextField(
                 controller: emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
+                decoration: InputDecoration(
+                  label: RichText(
+                    text: TextSpan(
+                      text: 'Email ',
+                      style: Theme.of(context).inputDecorationTheme.labelStyle ??
+                          Theme.of(context).textTheme.bodyLarge,
+                      children: const [
+                        TextSpan(
+                          text: '*',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 20),
               if (isLoading)
