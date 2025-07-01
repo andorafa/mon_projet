@@ -25,7 +25,14 @@ class ProductDetailPage extends StatelessWidget {
             return const Center(child: Text('Erreur de chargement'));
           } else {
             final product = snapshot.data!;
-            final modelUrl = product['model_url'];
+            // 🟢 SURCHARGE model_url selon le produit
+            String? modelUrl = product['model_url'];
+            if (product['id'] == 5) {
+              modelUrl = "https://drive.google.com/uc?export=download&id=1Oq_vVepdhZqbhX2Gm7nVcQqttLrlwZWQ";
+            }
+            if (product['id'] == 6) {
+              modelUrl = "https://drive.google.com/uc?export=download&id=1PsD-QhE0z1R-v4mcY8-W0CFw746oLUXl";
+            }
             return Padding(
               padding: const EdgeInsets.all(20),
               child: Column(

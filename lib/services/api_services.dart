@@ -7,7 +7,9 @@ Future<Map<String, dynamic>?> fetchProductDetail(int productId, {http.Client? cl
   final response = await httpClient.get(Uri.parse(apiUrl));
 
   if (response.statusCode == 200) {
-    return json.decode(response.body) as Map<String, dynamic>;
+    final data = json.decode(response.body) as Map<String, dynamic>;
+    print("DEBUG Product Detail reçu : $data");
+    return data;
   } else {
     print('Erreur récupération du produit : ${response.statusCode}');
     return null;
