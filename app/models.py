@@ -40,7 +40,7 @@ class Customer(db.Model):
 class Order(db.Model):
     id = db.Column(db.String(64), primary_key=True)  # identifiant commande CRM
     customer_id = db.Column(db.Integer, db.ForeignKey("customer.id"), nullable=False)
-    date = db.Column(db.DateTime, default=datetime.utcnow)
+    date = db.Column(db.DateTime, default=lambda: datetime.now(tz=datetime.UTC))
     status = db.Column(db.String(128), default="pending")
     total_amount = db.Column(db.Float, default=0.0)
     products = db.relationship("OrderProduct", backref="order", lazy=True, cascade="all, delete-orphan")

@@ -1,6 +1,6 @@
 # scripts/import_crm_orders.py
 
-from datetime import datetime
+from datetime import date as dt_date, datetime
 import sys
 import os
 
@@ -74,7 +74,7 @@ def import_crm_orders():
                     order = Order(
                         id=o["id"],
                         customer_id=cust.id,
-                        date=datetime.utcnow(),  # Pas de date précise dans le mock
+                        date=datetime.now(tz=datetime.UTC),
                         status="imported",
                         total_amount=0.0  # peut être recalculé si besoin
                     )
