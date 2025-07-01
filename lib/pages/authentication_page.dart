@@ -219,6 +219,7 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
                 ),
               ),
               TextField(
+                key: const Key('emailField'),
                 controller: emailController,
                 decoration: InputDecoration(
                   label: RichText(
