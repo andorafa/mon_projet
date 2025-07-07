@@ -3,6 +3,7 @@ from flask import request, abort
 from app.models import Product, User
 from app import db
 import requests
+import os  # ← Ajouté
 from app.config import Config
 
 ns = Namespace("revendeurs", description="API Revendeurs")
@@ -29,7 +30,7 @@ class RevendeursAPI(Resource):
         if not user:
             abort(401, description="Clé API invalide.")
 
-        if Config.USE_MOCK_PRODUCTS:
+        if os.getenv("USE_MOCK_PRODUCTS", "false").lower() == "true":
             print("🟡 USE_MOCK_PRODUCTS=true ➔ récupération depuis le mock ERP.")
             try:
                 url = f"{Config.MOCK_API_URL}/products"
@@ -45,7 +46,7 @@ class RevendeursAPI(Resource):
                         "name": p["name"],
                         "description": p.get("details", {}).get("description", ""),
                         "price": float(price_str),
-                        "model_url": "",  # Le mock ne fournit pas ce champ
+                        "model_url": "",
                         "created_at": p.get("createdAt", ""),
                         "stock": int(p.get("stock", 0)) if isinstance(p.get("stock", 0), int) else 0,
                     })
@@ -74,7 +75,7 @@ class RevendeurProductDetailAPI(Resource):
         if not user:
             abort(401, description="Clé API invalide.")
 
-        if Config.USE_MOCK_PRODUCTS:
+        if os.getenv("USE_MOCK_PRODUCTS", "false").lower() == "true":
             print("🟡 USE_MOCK_PRODUCTS=true ➔ récupération détail depuis le mock ERP.")
             try:
                 url = f"{Config.MOCK_API_URL}/products/{product_id}"
