@@ -113,6 +113,7 @@ class _ProductListPageState extends State<ProductListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: const Key('productListPage'), // 🔑 Ajout d'une clé unique
       appBar: AppBar(
         title: const Text('Liste des produits'),
         actions: [
