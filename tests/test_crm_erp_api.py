@@ -1,3 +1,7 @@
+
+import os
+os.environ["USE_MOCK_PRODUCTS"] = "true"
+
 import pytest
 import requests
 from app import db
@@ -99,8 +103,12 @@ def test_get_erp_product_detail_not_found(client, mocker):
 
 def test_erp_api_unavailable_with_fallback(client, mocker):
     mocker.patch("app.resources.erp_api.requests.get", side_effect=requests.exceptions.ConnectionError("API down"))
+    
+    # Nettoyer base locale
+    Product.query.delete()
+    db.session.commit()
+    
     product = Product(
-        id=42,
         name="Produit BDD",
         description="local",
         price=10.0,
@@ -122,3 +130,6 @@ def test_erp_api_unavailable_no_fallback(client, mocker):
     assert response.status_code == 503
     response_json = response.get_json()
     assert "Aucune donnée disponible" in response_json["message"]
+
+
+del os.environ["USE_MOCK_PRODUCTS"]

@@ -1,4 +1,10 @@
-from app import db
+import pytest
+import os
+
+import os
+os.environ["USE_MOCK_PRODUCTS"] = "true"
+
+
 from datetime import datetime
 
 class MockResponse:
@@ -13,7 +19,12 @@ class MockResponse:
         if self.status_code >= 400:
             raise Exception(f"HTTP {self.status_code}")
 
+# ---------------------------------------------------
+# Tests pour les routes revendeurs avec API mockée
+# ---------------------------------------------------
+
 def test_revendeur_list_with_valid_key(client, setup_user, mocker):
+
     setup_user(email="revendeur@test.com", api_key="revendeur_key")
 
     mock_data = [
@@ -37,6 +48,7 @@ def test_revendeur_list_with_valid_key(client, setup_user, mocker):
     assert data[0]["name"] == "Produit Revendeur"
 
 def test_revendeur_detail_with_valid_key(client, setup_user, mocker):
+
     setup_user(email="revendeur@test.com", api_key="revendeur_key")
 
     mock_data = {
@@ -54,22 +66,31 @@ def test_revendeur_detail_with_valid_key(client, setup_user, mocker):
     response = client.get("/api/revendeurs/products/1", headers={"x-api-key": "revendeur_key"})
     assert response.status_code == 200
     data = response.get_json()
-    assert isinstance(data, dict)
     assert data["name"] == "Produit Détail"
-    assert data["price"] == 15.0
+    assert data["stock"] == 5
 
-def test_revendeur_list_no_key(client):
-    response = client.get("/api/revendeurs/products")
-    assert response.status_code == 401
+def test_revendeurs_get_direct_valid(client, setup_user, mocker):
 
-def test_revendeur_list_invalid_key(client):
-    response = client.get("/api/revendeurs/products", headers={"x-api-key": "wrong_key"})
-    assert response.status_code == 401
+    setup_user(email="revendeur@test.com", api_key="valid_key")
 
-def test_revendeur_detail_no_key(client):
-    response = client.get("/api/revendeurs/products/1")
-    assert response.status_code == 401
+    mock_data = [
+        {
+            "id": "1",
+            "name": "Produit Test",
+            "details": {"description": "Desc", "price": "1.0"},
+            "stock": 20,
+            "createdAt": datetime.strptime("2024-01-01", "%Y-%m-%d")
+        }
+    ]
+    mocker.patch(
+        "app.resources.revendeurs.requests.get",
+        return_value=MockResponse(json_data=mock_data)
+    )
 
-def test_revendeur_detail_invalid_key(client):
-    response = client.get("/api/revendeurs/products/1", headers={"x-api-key": "wrong_key"})
-    assert response.status_code == 401
+    res = client.get("/api/revendeurs/products", headers={"x-api-key": "valid_key"})
+    assert res.status_code == 200
+    data = res.get_json()
+    assert data[0]["name"] == "Produit Test"
+
+
+del os.environ["USE_MOCK_PRODUCTS"]

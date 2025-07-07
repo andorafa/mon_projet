@@ -1,5 +1,5 @@
 from app import db
-from datetime import datetime, UTC
+from datetime import datetime, UTC, timezone
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -7,7 +7,7 @@ class User(db.Model):
     api_key = db.Column(db.String(256), nullable=False, unique=True)
     first_name = db.Column(db.String(256), nullable=True)  # Ajouté pour stocker le prénom
     last_name = db.Column(db.String(256), nullable=True)   # Ajouté pour stocker le nom de famille
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC))
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def __repr__(self):
         return f"<User {self.first_name} {self.last_name} ({self.email})>"
@@ -18,7 +18,7 @@ class Product(db.Model):
     description = db.Column(db.Text)
     price = db.Column(db.Float, nullable=False)
     model_url = db.Column(db.String(1024))
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC))
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     stock = db.Column(db.Integer, default=0)
 
     def __repr__(self):
@@ -31,7 +31,7 @@ class Customer(db.Model):
     last_name = db.Column(db.String(256))
     city = db.Column(db.String(256))
     postal_code = db.Column(db.String(256))
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC))
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     orders = db.relationship("Order", backref="customer", lazy=True, cascade="all, delete-orphan")
 
     def __repr__(self):
@@ -40,7 +40,7 @@ class Customer(db.Model):
 class Order(db.Model):
     id = db.Column(db.String(64), primary_key=True)  # identifiant commande CRM
     customer_id = db.Column(db.Integer, db.ForeignKey("customer.id"), nullable=False)
-    date = db.Column(db.DateTime, default=lambda: datetime.now(tz=datetime.UTC))
+    date = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     status = db.Column(db.String(128), default="pending")
     total_amount = db.Column(db.Float, default=0.0)
     products = db.relationship("OrderProduct", backref="order", lazy=True, cascade="all, delete-orphan")

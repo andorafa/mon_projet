@@ -1,5 +1,9 @@
+import os
+os.environ["USE_MOCK_PRODUCTS"] = "true"
+
 from app.config import Config
 from datetime import datetime
+
 
 class MockResponse:
     def __init__(self, json_data, status_code=200):
@@ -40,3 +44,6 @@ def test_webshop_missing_key(client):
 def test_webshop_invalid_key(client):
     response = client.get("/api/webshop/products", headers={"x-api-key": "wrong_key"})
     assert response.status_code == 401
+
+
+del os.environ["USE_MOCK_PRODUCTS"]

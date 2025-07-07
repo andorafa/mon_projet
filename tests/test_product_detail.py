@@ -1,3 +1,6 @@
+import os
+os.environ["USE_MOCK_PRODUCTS"] = "true"
+
 from app import db
 from app.models import Product
 import pytest
@@ -48,3 +51,7 @@ def test_product_detail_not_found(client, mocker):
     )
     response = client.get("/api/products/9999")
     assert response.status_code == 404
+
+
+del os.environ["USE_MOCK_PRODUCTS"]
+

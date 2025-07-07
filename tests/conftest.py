@@ -1,3 +1,9 @@
+
+import os
+
+
+USE_MOCK_PRODUCTS = os.getenv("USE_MOCK_PRODUCTS", "false").lower() == "true"
+
 import uuid
 import pytest
 from app import create_app, db
