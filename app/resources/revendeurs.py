@@ -3,10 +3,16 @@ from flask import request, abort
 from app.models import Product, User
 from app import db
 import requests
-import os  # ← Ajouté
+import os
 from app.config import Config
 
 ns = Namespace("revendeurs", description="API Revendeurs")
+
+# 🔁 Constantes
+API_KEY_MISSING = "Clé API manquante."
+API_KEY_INVALID = "Clé API invalide."
+ERP_API_ERROR = "Données ERP indisponibles : API mock hors ligne."
+NO_PRODUCTS_LOCAL = "Aucun produit disponible dans la base locale."
 
 product_model = ns.model("Product", {
     "id": fields.Integer,
@@ -25,10 +31,10 @@ class RevendeursAPI(Resource):
     def get(self):
         api_key = request.headers.get("x-api-key")
         if not api_key:
-            abort(401, description="Clé API manquante.")
+            abort(401, description=API_KEY_MISSING)
         user = User.query.filter_by(api_key=api_key).first()
         if not user:
-            abort(401, description="Clé API invalide.")
+            abort(401, description=API_KEY_INVALID)
 
         if os.getenv("USE_MOCK_PRODUCTS", "false").lower() == "true":
             print("🟡 USE_MOCK_PRODUCTS=true ➔ récupération depuis le mock ERP.")
@@ -53,14 +59,14 @@ class RevendeursAPI(Resource):
                 return cleaned
             except requests.RequestException as e:
                 print(f"⚠️ API mock indisponible : {e}")
-                abort(503, "Données ERP indisponibles : API mock hors ligne.")
+                abort(503, ERP_API_ERROR)
         else:
             print("🟢 USE_MOCK_PRODUCTS=false ➔ récupération depuis la base locale.")
             products = Product.query.all()
             if products:
                 return products
             else:
-                abort(503, "Aucun produit disponible dans la base locale.")
+                abort(503, NO_PRODUCTS_LOCAL)
 
 @ns.route("/products/<int:product_id>")
 class RevendeurProductDetailAPI(Resource):
@@ -70,10 +76,10 @@ class RevendeurProductDetailAPI(Resource):
     def get(self, product_id):
         api_key = request.headers.get("x-api-key")
         if not api_key:
-            abort(401, description="Clé API manquante.")
+            abort(401, description=API_KEY_MISSING)
         user = User.query.filter_by(api_key=api_key).first()
         if not user:
-            abort(401, description="Clé API invalide.")
+            abort(401, description=API_KEY_INVALID)
 
         if os.getenv("USE_MOCK_PRODUCTS", "false").lower() == "true":
             print("🟡 USE_MOCK_PRODUCTS=true ➔ récupération détail depuis le mock ERP.")
@@ -111,10 +117,10 @@ class RevendeurAuthenticate(Resource):
     def post(self):
         api_key = request.headers.get("x-api-key")
         if not api_key:
-            abort(400, description="Clé API manquante.")
+            abort(400, description=API_KEY_MISSING)
         user = User.query.filter_by(api_key=api_key).first()
         if not user:
-            abort(401, description="Clé API invalide.")
+            abort(401, description=API_KEY_INVALID)
         return {"message": "Authentification réussie"}, 200
 
 @ns.route("/logout")
@@ -123,10 +129,10 @@ class RevendeurLogout(Resource):
     def post(self):
         api_key = request.headers.get("x-api-key")
         if not api_key:
-            abort(400, description="Clé API manquante.")
+            abort(400, description=API_KEY_MISSING)
         user = User.query.filter_by(api_key=api_key).first()
         if not user:
-            abort(401, description="Clé API invalide.")
+            abort(401, description=API_KEY_INVALID)
         db.session.delete(user)
         db.session.commit()
         return {"message": "Déconnexion réussie"}, 200
