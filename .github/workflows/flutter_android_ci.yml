@@ -23,7 +23,7 @@ jobs:
 
       # 🔎 Debug : Lister les assets présents
       - name: 📂 Lister les fichiers assets
-        run: ls -R assets
+        run: ls -R images
 
       # ⚙️ Configurer Flutter
       - name: Set up Flutter
