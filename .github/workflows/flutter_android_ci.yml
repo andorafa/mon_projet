@@ -26,6 +26,10 @@ jobs:
         with:
           flutter-version: '3.32.4'
 
+      # 🧹 Nettoyer le projet Flutter
+      - name: Clean Flutter project
+        run: flutter clean
+
       # 📦 Installer les dépendances
       - name: Install Flutter dependencies
         run: flutter pub get
