@@ -13,7 +13,7 @@ class WelcomePage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(
-                'images/logo.png',
+                'images/logovrai.jpg',
                 width: 200,
                 fit: BoxFit.contain,
               ),
