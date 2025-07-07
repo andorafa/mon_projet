@@ -20,6 +20,11 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v3
 
+
+      # 🔎 Debug : Lister les assets présents
+      - name: 📂 Lister les fichiers assets
+        run: ls -R assets
+
       # ⚙️ Configurer Flutter
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
