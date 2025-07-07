@@ -2,8 +2,9 @@ import os
 import pytest
 import requests
 from datetime import datetime
-
 from app.config import Config
+from app.models import Product, OrderProduct
+from app import db
 
 headers = {"x-api-key": Config.API_WEBSHOP_KEY}
 
@@ -66,12 +67,7 @@ def test_webshop_get_product_detail_valid(client, mocker):
     del os.environ["USE_MOCK_PRODUCTS"]
 
 
-def test_webshop_get_product_unauthorized(client):
-    res = client.get("/api/webshop/products")
-    assert res.status_code == 401
-
-
-def test_webshop_get_product_detail_not_found(client, mocker):
+def test_webshop_get_product_detail_not_found_in_mock(client, mocker):
     os.environ["USE_MOCK_PRODUCTS"] = "true"
 
     mocker.patch("app.resources.webshop.requests.get", return_value=MockResponse({}, status_code=404))
@@ -83,13 +79,91 @@ def test_webshop_get_product_detail_not_found(client, mocker):
     del os.environ["USE_MOCK_PRODUCTS"]
 
 
+def test_webshop_get_product_unauthorized(client):
+    res = client.get("/api/webshop/products")
+    assert res.status_code == 401
+
+
+def test_webshop_get_product_invalid_key(client):
+    res = client.get("/api/webshop/products", headers={"x-api-key": "wrong_key"})
+    assert res.status_code == 401
+
+
+def test_webshop_product_detail_not_found_in_db(client, mocker):
+    os.environ["USE_MOCK_PRODUCTS"] = "false"
+    mocker.patch("app.resources.webshop.requests.get", side_effect=requests.RequestException("API down"))
+
+    res = client.get("/api/webshop/products/9999", headers=headers)
+    assert res.status_code == 404
+
+    del os.environ["USE_MOCK_PRODUCTS"]
+
+
 def test_webshop_fallback_on_mock_failure(client, mocker, app):
     os.environ["USE_MOCK_PRODUCTS"] = "true"
 
-    # Simule une erreur réseau sur le mock
     mocker.patch("app.resources.webshop.requests.get", side_effect=requests.RequestException("API down"))
 
-    # Ajoute un produit en BDD locale pour le fallback
+    with app.app_context():
+
+
+        # Supprimer les relations d'abord
+        db.session.query(OrderProduct).delete()
+        db.session.commit()
+
+        # Puis supprimer les produits
+        db.session.query(Product).delete()
+        db.session.commit()
+
+        # Ajout d'un produit local pour fallback
+        product = Product(
+            name="Produit Local",
+            description="Backup",
+            price=5.0,
+            stock=1,
+            created_at="2024-01-01",
+            model_url=""
+        )
+        db.session.add(product)
+        db.session.commit()
+
+
+    res = client.get("/api/webshop/products", headers=headers)
+
+    print(">>> STATUS:", res.status_code)
+    print(">>> BODY:", res.get_json())
+
+    assert res.status_code == 200
+    assert res.get_json()[0]["name"] == "Produit Local"
+
+    del os.environ["USE_MOCK_PRODUCTS"]
+
+
+
+
+
+
+def test_webshop_fallback_no_products(client, mocker, app):
+    os.environ["USE_MOCK_PRODUCTS"] = "true"
+
+    mocker.patch("app.resources.webshop.requests.get", side_effect=requests.RequestException("API down"))
+
     with app.app_context():
         from app.models import Product
-        product = Product(name="Produit Local", description="Backup", price=5.0, stock=1)
+        from app import db
+        Product.query.delete()
+        db.session.commit()
+        assert Product.query.count() == 0
+
+    res = client.get("/api/webshop/products", headers=headers)
+
+    print("\nRESPONSE STATUS:", res.status_code)
+    print("RESPONSE BODY:", res.get_json())
+
+    assert res.status_code == 503
+    assert "Aucune donnée disponible" in res.get_json()["message"]
+
+    del os.environ["USE_MOCK_PRODUCTS"]
+
+
+
