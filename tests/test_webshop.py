@@ -121,7 +121,7 @@ def test_webshop_fallback_on_mock_failure(client, mocker, app):
             description="Backup",
             price=5.0,
             stock=1,
-            created_at="2024-01-01",
+            created_at=datetime.strptime("2024-01-01", "%Y-%m-%d"),
             model_url=""
         )
         db.session.add(product)
