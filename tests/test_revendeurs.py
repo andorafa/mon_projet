@@ -1,6 +1,8 @@
 import os
 import pytest
 from datetime import datetime
+
+import requests
 from app import db
 from app.models import User, Product
 
@@ -92,3 +94,12 @@ def test_authenticate_post_missing_key(client):
 def test_authenticate_post_invalid_key(client):
     res = client.post("/api/revendeurs/authenticate", headers={"x-api-key": "invalid"})
     assert res.status_code == 401
+
+def test_revendeurs_mock_api_down(client, setup_user, mocker):
+    os.environ["USE_MOCK_PRODUCTS"] = "true"
+    setup_user(email="revendeur@test.com", api_key="fail_key")
+    mocker.patch("app.resources.revendeurs.requests.get", side_effect=requests.RequestException("DOWN"))
+
+    res = client.get("/api/revendeurs/products", headers={"x-api-key": "fail_key"})
+    assert res.status_code == 503
+    del os.environ["USE_MOCK_PRODUCTS"]

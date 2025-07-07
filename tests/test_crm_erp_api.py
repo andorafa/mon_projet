@@ -133,3 +133,27 @@ def test_erp_api_unavailable_no_fallback(client, mocker):
 
 
 del os.environ["USE_MOCK_PRODUCTS"]
+
+
+def test_crm_order_products_empty(client, mocker):
+    mock_data = {
+        "id": "1",
+        "orders": [{"id": "123", "products": []}]
+    }
+    mocker.patch("app.resources.crm_api.requests.get", return_value=MockResponse(mock_data))
+    res = client.get("/api/crm/customers/1/orders/123/products")
+    assert res.status_code == 200
+    assert res.get_json() == []
+
+
+def test_get_erp_product_detail_db_fallback_success(client, mocker, app):
+    mocker.patch("app.resources.erp_api.requests.get", side_effect=requests.RequestException("fail"))
+    with app.app_context():
+        db.session.add(Product(name="Café Local", description="Desc", price=7.0, model_url="url", stock=10))
+        db.session.commit()
+        pid = Product.query.first().id
+
+    res = client.get(f"/api/erp/products/{pid}")
+    assert res.status_code == 200
+    assert res.get_json()["name"] == "Café Local"
+
