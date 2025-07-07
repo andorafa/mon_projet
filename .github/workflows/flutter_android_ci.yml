@@ -2,9 +2,9 @@ name: Flutter Android CI/CD
 
 on:
   push:
-    branches: [mobile-app-secours]
+    branches: [ma-branche-retour-mobile]
   pull_request:
-    branches: [mobile-app-secours]
+    branches: [ma-branche-retour-mobile]
 
 jobs:
   build-and-deploy:
