@@ -13,12 +13,10 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object('app.config.Config')
 
-    # ✅ Ajout de pool_pre_ping pour éviter les erreurs SSL sur PostgreSQL
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         "pool_pre_ping": True
     }
 
-    # Route racine définie directement en Flask pour éviter 404
     @app.route('/')
     def root_redirect():
         return redirect('/swagger')
@@ -57,7 +55,7 @@ def create_app():
     api.add_namespace(user_ns, path="/api/users")
     api.add_namespace(product_ns, path="/api/products")
     api.add_namespace(admin_ns, path="/api/admin")
-    api.add_namespace(crm_ns, path="/api/crm") 
+    api.add_namespace(crm_ns, path="/api/crm")
     api.add_namespace(erp_ns, path="/api/erp")
 
     ns_health = api.namespace('health', description='Health check API')
@@ -69,6 +67,5 @@ def create_app():
             return {"status": "API OK"}, 200
 
     api.add_namespace(ns_health, path='/health')
-   
 
     return app

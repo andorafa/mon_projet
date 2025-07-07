@@ -1,4 +1,8 @@
+import os
+import sys
 import requests # type: ignore
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # 🛠️ L'URL de l'API Flask
 BASE_URL = "http://127.0.0.1:5000"

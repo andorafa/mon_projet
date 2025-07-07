@@ -5,15 +5,20 @@ on:
     branches:
       - main
       - creation-apirest
+      - sauvegarde-reset-avant-synchro-back
   pull_request:
     branches:
       - main
       - creation-apirest
+      - sauvegarde-reset-avant-synchro-back
 
 jobs:
   integration-tests:
     runs-on: ubuntu-latest
     name: Tests integration API complète
+    env:
+      API_WEBSHOP_KEY: ${{ secrets.API_WEBSHOP_KEY }}
+      USE_MOCK_PRODUCTS: true   # Ajout pour forcer le mock pendant les tests
 
     steps:
       - name: 🧾 Récupérer le code

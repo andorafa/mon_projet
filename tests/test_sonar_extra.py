@@ -1,11 +1,17 @@
+import os
 import pytest
 from app import db
 from app.models import User, Product
 
 def create_user(client, email, key):
     with client.application.app_context():
+        # 🔧 Ajouté : suppression si l'utilisateur existe déjà
+        db.session.query(User).filter_by(email=email).delete()
+        db.session.commit()
+
         db.session.add(User(email=email, api_key=key))
         db.session.commit()
+
 
 def create_product(client):
     with client.application.app_context():
@@ -13,10 +19,14 @@ def create_product(client):
         db.session.commit()
 
 def test_revendeurs_products(client):
+    #os.environ["USE_MOCK_PRODUCTS"] = "true"  # ✅ ajout
+
     create_user(client, "test@coverage.com", "key123")
     create_product(client)
     res = client.get("/api/revendeurs/products", headers={"x-api-key": "key123"})
     assert res.status_code == 200
+
+    #del os.environ["USE_MOCK_PRODUCTS"]  # ✅ nettoyage
 
 def test_authenticate_success(client):
     with client.application.app_context():

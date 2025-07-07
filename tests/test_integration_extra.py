@@ -1,6 +1,7 @@
 import pytest
 from app import db
 from app.models import Product, User
+from app.config import Config
 
 # 🔁 Test pour /api/admin/init-db
 def test_admin_init_db(client):
@@ -27,15 +28,14 @@ def test_product_detail_not_found(client):
     assert res.status_code == 404
 
 # 🛍️ Test webshop avec clé correcte
-def test_webshop_valid_key(client):
-    with client.application.app_context():
-        user = User(email="webshop@test.com", api_key="webshop123")
-        db.session.add(user)
-        db.session.commit()
+from app.config import Config  # à ajouter en haut du fichier
 
-    res = client.get("/api/webshop/products", headers={"x-api-key": "webshop123"})
+def test_webshop_valid_key(client):
+    # Utiliser la vraie clé attendue par l’API
+    res = client.get("/api/webshop/products", headers={"x-api-key": Config.API_WEBSHOP_KEY})
     assert res.status_code == 200
-    assert isinstance(res.get_json(), list) or "products" in res.get_json()
+    assert isinstance(res.get_json(), list)
+
 
 # 🧨 Test webshop sans clé
 def test_webshop_missing_key(client):

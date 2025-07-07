@@ -7,7 +7,7 @@ Usage commercial, modification ou redistribution, réutilisation du code interdi
 
 # Ceci est le projet MSPR côté back
 
-[![Codecov](https://codecov.io/gh/andorafa/mon_projet/branch/creation-apirest/graph/badge.svg)](https://codecov.io/gh/andorafa/mon_projet)
+[![Codecov](https://codecov.io/gh/andorafa/mon_projet/branch/sauvegarde-reset-avant-synchro-back/graph/badge.svg)](https://codecov.io/gh/andorafa/mon_projet)
 
 ![CI (creation-apirest)](https://github.com/andorafa/mon_projet/actions/workflows/ci.yml/badge.svg?branch=creation-apirest)
 
