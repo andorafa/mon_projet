@@ -4,6 +4,9 @@ from app.config import Config
 
 ns = Namespace("crm", description="API CRM - Clients et Commandes")
 
+# 🔁 Constantes
+CRM_API_ERROR_MESSAGE = "Données CRM indisponibles : API mock hors ligne."
+
 customer_model = ns.model("Customer", {
     "id": fields.String,
     "name": fields.String,
@@ -24,7 +27,7 @@ class CustomersAPI(Resource):
             return response.json()
         except requests.RequestException as e:
             print(f"⚠️ API mock CRM indisponible : {e}")
-            ns.abort(503, "Données CRM indisponibles : API mock hors ligne.")
+            ns.abort(503, CRM_API_ERROR_MESSAGE)
 
 @ns.route("/customers/<string:customer_id>/orders")
 class CustomerOrdersAPI(Resource):
@@ -39,7 +42,7 @@ class CustomerOrdersAPI(Resource):
             return customer.get("orders", [])
         except requests.RequestException as e:
             print(f"⚠️ API mock CRM indisponible : {e}")
-            ns.abort(503, "Données CRM indisponibles : API mock hors ligne.")
+            ns.abort(503, CRM_API_ERROR_MESSAGE)
 
 @ns.route("/customers/<string:customer_id>/orders/<string:order_id>/products")
 class OrderProductsAPI(Resource):
@@ -58,4 +61,4 @@ class OrderProductsAPI(Resource):
             ns.abort(404, f"Commande {order_id} non trouvée pour le client {customer_id}")
         except requests.RequestException as e:
             print(f"⚠️ API mock CRM indisponible : {e}")
-            ns.abort(503, "Données CRM indisponibles : API mock hors ligne.")
+            ns.abort(503, CRM_API_ERROR_MESSAGE)
