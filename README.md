@@ -33,7 +33,7 @@ Le code du backend a été temporairement fusionné dans la branche `main` **uni
 
 ---
 
-✅ CI/CD, tests, sécurité, et couverture sont toujours configurés sur `creation-apirest`.  
+✅ CI/CD, tests, sécurité, et couverture sont toujours configurés sur `creation-apirest` ou `sauvegarde-reset-avant-synchro-back`.  
 Ce merge dans `main` est purement **fonctionnel pour les outils de qualité de code.**
 
 ---
