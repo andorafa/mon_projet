@@ -12,6 +12,8 @@ ns = Namespace("revendeurs", description="API Revendeurs")
 # 🔁 Constantes
 ERP_API_ERROR = "Données ERP indisponibles : API mock hors ligne."
 NO_PRODUCTS_LOCAL = "Aucun produit disponible dans la base locale."
+API_KEY_MISSING = "Clé API manquante."
+API_KEY_INVALID = "Clé API invalide."
 
 product_model = ns.model("Product", {
     "id": fields.Integer,
@@ -30,11 +32,11 @@ class RevendeursAPI(Resource):
     @ns.marshal_with(product_model, as_list=True)
     def get(self):
         api_key = request.headers.get("x-api-key")
-        user = User.query.filter_by(api_key=api_key).first()
         if not api_key:
-            abort(401, description="Clé API manquante.")
+            abort(401, description=API_KEY_MISSING)
+        user = User.query.filter_by(api_key=api_key).first()
         if not user:
-            abort(401, description="Clé API invalide.")
+            abort(401, description=API_KEY_INVALID)
 
         if os.getenv("USE_MOCK_PRODUCTS", "false").lower() == "true":
             print("🟡 USE_MOCK_PRODUCTS=true ➔ récupération depuis le mock ERP.")
@@ -62,11 +64,11 @@ class RevendeurProductDetailAPI(Resource):
     @ns.response(404, "Produit introuvable")
     def get(self, product_id):
         api_key = request.headers.get("x-api-key")
-        user = User.query.filter_by(api_key=api_key).first()
         if not api_key:
-            abort(401, description="Clé API manquante.")
+            abort(401, description=API_KEY_MISSING)
+        user = User.query.filter_by(api_key=api_key).first()
         if not user:
-            abort(401, description="Clé API invalide.")
+            abort(401, description=API_KEY_INVALID)
 
         if os.getenv("USE_MOCK_PRODUCTS", "false").lower() == "true":
             print("🟡 USE_MOCK_PRODUCTS=true ➔ récupération détail depuis le mock ERP.")
@@ -95,10 +97,10 @@ class RevendeurAuthenticate(Resource):
     def post(self):
         api_key = request.headers.get("x-api-key")
         if not api_key:
-            abort(400, description="Clé API manquante.")
+            abort(400, description=API_KEY_MISSING)
         user = User.query.filter_by(api_key=api_key).first()
         if not user:
-            abort(401, description="Clé API invalide.")
+            abort(401, description=API_KEY_INVALID)
         return {"message": "Authentification réussie"}, 200
 
 
@@ -108,10 +110,10 @@ class RevendeurLogout(Resource):
     def post(self):
         api_key = request.headers.get("x-api-key")
         if not api_key:
-            abort(400, description="Clé API manquante.")
+            abort(400, description=API_KEY_MISSING)
         user = User.query.filter_by(api_key=api_key).first()
         if not user:
-            abort(401, description="Clé API invalide.")
+            abort(401, description=API_KEY_INVALID)
         db.session.delete(user)
         db.session.commit()
         return {"message": "Déconnexion réussie"}, 200
