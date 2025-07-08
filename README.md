@@ -29,7 +29,7 @@ Le code du backend a été temporairement fusionné dans la branche `main` **uni
 ➡️ En effet, **SonarCloud gratuit n’analyse que la branche `main`**, d’où cette intégration technique.
 
 > 🚨 **Important** : pour le moment aucun développement actif ne se fait dans `main`.  
-> Pour le moment, toutes les fonctionnalités backend et mobile vont continuer (si besoin) d’évoluer dans `creation-apirest` et `mobile-app-secours` .
+> Pour le moment, toutes les fonctionnalités backend et mobile vont continuer (si besoin) d’évoluer dans `creation-apirest` ou `sauvegarde-reset-avant-synchro-back` et `mobile-app-secours` ou `ma-branche-retour-mobile`.
 
 ---
 
