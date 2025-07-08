@@ -182,3 +182,68 @@ def test_revendeurs_detail_not_found_in_db(client, setup_user):
     assert res.status_code == 404
 
     del os.environ["USE_MOCK_PRODUCTS"]
+
+
+def test_revendeurs_product_detail_missing_key(client):
+    os.environ["USE_MOCK_PRODUCTS"] = "true"
+    res = client.get("/api/revendeurs/products/1")  # Pas de clé
+    assert res.status_code == 401
+    assert res.get_json()["message"] == "Clé API manquante."
+    del os.environ["USE_MOCK_PRODUCTS"]
+
+
+def test_revendeurs_product_detail_invalid_key(client):
+    os.environ["USE_MOCK_PRODUCTS"] = "true"
+    res = client.get("/api/revendeurs/products/1", headers={"x-api-key": "fake"})
+    print("🔍 RESPONSE BODY:", res.get_data(as_text=True))  # 👈 AJOUT ICI
+    assert res.status_code == 401
+    assert res.get_json()["message"] == "Clé API invalide."
+    del os.environ["USE_MOCK_PRODUCTS"]
+
+
+def test_revendeurs_product_detail_not_found_in_mock(client, setup_user, mocker):
+    os.environ["USE_MOCK_PRODUCTS"] = "true"
+    setup_user(email="revendeur@test.com", api_key="mock_key")
+
+    # Simule une réponse 404 de l'API mock
+    mocker.patch("app.resources.revendeurs.requests.get", return_value=MockResponse({}, status_code=404))
+
+    res = client.get("/api/revendeurs/products/999", headers={"x-api-key": "mock_key"})
+
+    assert res.status_code == 404
+
+    # 🔎 Extraction du message JSON
+    json_data = res.get_json()
+    print("🔍 RESPONSE STATUS:", res.status_code)
+    print("🔍 RESPONSE BODY:", json_data)
+
+    # ✅ Vérification souple du contenu
+    assert "Produit 999" in json_data["message"]
+    assert "non trouvé" in json_data["message"]
+
+    del os.environ["USE_MOCK_PRODUCTS"]
+
+
+def test_revendeurs_product_detail_mock_unavailable(client, setup_user, mocker):
+    os.environ["USE_MOCK_PRODUCTS"] = "true"
+    setup_user(email="test@rev.com", api_key="valid_key")
+
+    mocker.patch("app.resources.revendeurs.requests.get", side_effect=requests.RequestException("Fail"))
+
+    res = client.get("/api/revendeurs/products/1", headers={"x-api-key": "valid_key"})
+
+    assert res.status_code == 503
+
+    json_data = res.get_json()
+    print("🔍 RESPONSE STATUS:", res.status_code)
+    print("🔍 RESPONSE BODY:", json_data)
+
+    assert "produit 1" in json_data["message"].lower()
+    assert "indisponible" in json_data["message"].lower()
+
+    del os.environ["USE_MOCK_PRODUCTS"]
+
+
+
+    
+
