@@ -1,4 +1,3 @@
-
 import os
 os.environ["USE_MOCK_PRODUCTS"] = "true"
 
@@ -7,7 +6,6 @@ import requests
 from app import db
 from app.models import Product
 from datetime import datetime
-
 
 class MockResponse:
     def __init__(self, json_data, status_code=200):
@@ -64,6 +62,16 @@ def test_crm_customer_not_found(client, mocker):
     assert response.status_code == 404
     assert "Client 999 introuvable" in response.get_data(as_text=True)
 
+def test_crm_order_id_not_found_in_list(client, mocker):
+    mock_data = {
+        "id": "1",
+        "orders": [{"id": "123", "products": []}]
+    }
+    mocker.patch("app.resources.crm_api.requests.get", return_value=MockResponse(mock_data))
+    res = client.get("/api/crm/customers/1/orders/999/products")
+    assert res.status_code == 404
+    assert res.get_json()["message"].startswith("Commande 999 non trouvée")
+
 # -------------------------------
 # Tests ERP API
 # -------------------------------
@@ -103,11 +111,8 @@ def test_get_erp_product_detail_not_found(client, mocker):
 
 def test_erp_api_unavailable_with_fallback(client, mocker):
     mocker.patch("app.resources.erp_api.requests.get", side_effect=requests.exceptions.ConnectionError("API down"))
-    
-    # Nettoyer base locale
     Product.query.delete()
     db.session.commit()
-    
     product = Product(
         name="Produit BDD",
         description="local",
@@ -131,10 +136,6 @@ def test_erp_api_unavailable_no_fallback(client, mocker):
     response_json = response.get_json()
     assert "Aucune donnée disponible" in response_json["message"]
 
-
-del os.environ["USE_MOCK_PRODUCTS"]
-
-
 def test_crm_order_products_empty(client, mocker):
     mock_data = {
         "id": "1",
@@ -144,7 +145,6 @@ def test_crm_order_products_empty(client, mocker):
     res = client.get("/api/crm/customers/1/orders/123/products")
     assert res.status_code == 200
     assert res.get_json() == []
-
 
 def test_get_erp_product_detail_db_fallback_success(client, mocker, app):
     mocker.patch("app.resources.erp_api.requests.get", side_effect=requests.RequestException("fail"))
@@ -157,3 +157,4 @@ def test_get_erp_product_detail_db_fallback_success(client, mocker, app):
     assert res.status_code == 200
     assert res.get_json()["name"] == "Café Local"
 
+del os.environ["USE_MOCK_PRODUCTS"]

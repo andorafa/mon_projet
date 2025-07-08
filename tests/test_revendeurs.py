@@ -1,4 +1,5 @@
 import os
+from unittest import mock
 import pytest
 from datetime import datetime
 
@@ -102,4 +103,86 @@ def test_revendeurs_mock_api_down(client, setup_user, mocker):
 
     res = client.get("/api/revendeurs/products", headers={"x-api-key": "fail_key"})
     assert res.status_code == 503
+    del os.environ["USE_MOCK_PRODUCTS"]
+
+
+def test_revendeurs_get_from_db_when_mock_disabled(client, setup_user, app):
+    os.environ["USE_MOCK_PRODUCTS"] = "false"
+    setup_user(email="revendeur@test.com", api_key="local_key")
+
+    with app.app_context():
+        # 🔁 Nettoyage complet
+        Product.query.delete()
+        db.session.commit()
+
+        # ✅ Ajout d'un produit local
+        product = Product(name="Produit Local Test", description="Backup", price=5.0, stock=1)
+        db.session.add(product)
+        db.session.commit()
+
+        # 🔍 Vérification manuelle
+        assert Product.query.count() == 1
+        print("✅ Produit ajouté en BDD :", Product.query.first().name)
+
+    res = client.get("/api/revendeurs/products", headers={"x-api-key": "local_key"})
+    assert res.status_code == 200
+    data = res.get_json()
+    assert any(p["name"] == "Produit Local Test" for p in data)
+    del os.environ["USE_MOCK_PRODUCTS"]
+
+
+
+
+
+
+
+def test_revendeurs_db_empty_returns_503(client, setup_user, app):
+    os.environ["USE_MOCK_PRODUCTS"] = "false"
+    setup_user(email="revendeur@test.com", api_key="empty_key")
+
+    with app.app_context():
+        # 🔁 Nettoyage BDD
+        Product.query.delete()
+        db.session.commit()
+
+        # 🔍 Vérification vide
+        assert Product.query.count() == 0
+        print("🧹 Base nettoyée : aucun produit")
+
+    res = client.get("/api/revendeurs/products", headers={"x-api-key": "empty_key"})
+    assert res.status_code == 503
+    assert "Aucun produit disponible" in res.get_data(as_text=True)
+    del os.environ["USE_MOCK_PRODUCTS"]
+
+
+
+
+
+
+
+
+
+def test_revendeurs_detail_from_db(client, setup_user, app, mocker):
+    setup_user(email="revendeur@test.com", api_key="local_key")
+    os.environ["USE_MOCK_PRODUCTS"] = "false"
+
+    with app.app_context():
+        product = Product(name="Machine DB", description="locale", price=19.0, model_url="model", stock=1, created_at=datetime.utcnow())
+        db.session.add(product)
+        db.session.commit()
+        pid = product.id
+
+    res = client.get(f"/api/revendeurs/products/{pid}", headers={"x-api-key": "local_key"})
+    assert res.status_code == 200
+    assert res.get_json()["name"] == "Machine DB"
+
+    del os.environ["USE_MOCK_PRODUCTS"]
+
+def test_revendeurs_detail_not_found_in_db(client, setup_user):
+    setup_user(email="revendeur@test.com", api_key="missing_key")
+    os.environ["USE_MOCK_PRODUCTS"] = "false"
+
+    res = client.get("/api/revendeurs/products/9999", headers={"x-api-key": "missing_key"})
+    assert res.status_code == 404
+
     del os.environ["USE_MOCK_PRODUCTS"]
