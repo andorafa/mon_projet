@@ -16,7 +16,9 @@ Ce projet (mon_projet) suit une structure multi-branche :
            [`creation-apirest`](https://github.com/andorafa/mon_projet/tree/creation-apirest) 
            ou [`sauvegarde-reset-avant-synchro-back`](https://github.com/andorafa/mon_projet/tree/sauvegarde-reset-avant-synchro-back)
 
-- 📱 Le code de l'**application mobile Flutter** est dans la branche [`mobile-app-secours`](https://github.com/andorafa/mon_projet/tree/mobile-app-secours)
+- 📱 Le code de l'**application mobile Flutter** est dans la branche
+           [`mobile-app-secours`](https://github.com/andorafa/mon_projet/tree/mobile-app-secours)
+           ou [`ma-branche-retour-mobile`](https://github.com/andorafa/mon_projet/tree/ma-branche-retour-mobile)
 
 ---
 
